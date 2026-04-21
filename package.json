@@ -1,0 +1,100 @@
+{
+  "name": "promptcache",
+  "version": "0.1.0",
+  "description": "Auto-optimize LLM prompt caching. Save 60-90% on Claude, GPT & Gemini API costs.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./anthropic": {
+      "import": {
+        "types": "./dist/providers/anthropic.d.ts",
+        "default": "./dist/providers/anthropic.js"
+      },
+      "require": {
+        "types": "./dist/providers/anthropic.d.cts",
+        "default": "./dist/providers/anthropic.cjs"
+      }
+    },
+    "./openai": {
+      "import": {
+        "types": "./dist/providers/openai.d.ts",
+        "default": "./dist/providers/openai.js"
+      },
+      "require": {
+        "types": "./dist/providers/openai.d.cts",
+        "default": "./dist/providers/openai.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "llm",
+    "prompt-caching",
+    "anthropic",
+    "openai",
+    "claude",
+    "gpt",
+    "cost-optimization",
+    "token-savings",
+    "cache",
+    "ai"
+  ],
+  "author": "sahilempire",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sahilempire/promptcache.git"
+  },
+  "homepage": "https://github.com/sahilempire/promptcache",
+  "bugs": {
+    "url": "https://github.com/sahilempire/promptcache/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=0.30.0",
+    "openai": ">=4.60.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "openai": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "openai": "^4.80.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
