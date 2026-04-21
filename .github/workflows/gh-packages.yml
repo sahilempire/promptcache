@@ -7,6 +7,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: github-packages
     permissions:
       contents: read
       packages: write

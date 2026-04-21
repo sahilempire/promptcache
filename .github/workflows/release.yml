@@ -1,4 +1,4 @@
-name: Release
+name: Release to npm
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: npm
     permissions:
       contents: read
       id-token: write
