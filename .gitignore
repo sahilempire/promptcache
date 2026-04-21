@@ -6,3 +6,5 @@ dist/
 .DS_Store
 coverage/
 *.log
+website/node_modules/
+website/.next/
