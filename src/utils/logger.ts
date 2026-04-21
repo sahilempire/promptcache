@@ -1,4 +1,4 @@
-const PREFIX = '[promptcache]'
+const PREFIX = '[cachellm]'
 
 export function createLogger(enabled: boolean = false) {
   return {

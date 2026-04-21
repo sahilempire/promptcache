@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { optimizeAnthropic } from 'promptcache'
+import { optimizeAnthropic } from 'cachellm'
 
 // tools get cached too — great when you have big schemas
 const tools = [

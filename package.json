@@ -1,5 +1,5 @@
 {
-  "name": "promptcache",
+  "name": "cachellm",
   "version": "0.1.0",
   "description": "Auto-optimize LLM prompt caching. Save 60-90% on Claude, GPT & Gemini API costs.",
   "type": "module",
@@ -69,11 +69,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sahilempire/promptcache.git"
+    "url": "https://github.com/sahilempire/cachellm.git"
   },
-  "homepage": "https://github.com/sahilempire/promptcache",
+  "homepage": "https://github.com/sahilempire/cachellm",
   "bugs": {
-    "url": "https://github.com/sahilempire/promptcache/issues"
+    "url": "https://github.com/sahilempire/cachellm/issues"
   },
   "engines": {
     "node": ">=18.0.0"

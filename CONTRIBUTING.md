@@ -1,12 +1,12 @@
-# Contributing to promptcache
+# Contributing to cachellm
 
 Thanks for wanting to help out. Here's how to get started.
 
 ## Setup
 
 ```bash
-git clone https://github.com/sahilempire/promptcache.git
-cd promptcache
+git clone https://github.com/sahilempire/cachellm.git
+cd cachellm
 npm install
 ```
 

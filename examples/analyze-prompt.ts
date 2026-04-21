@@ -1,4 +1,4 @@
-import { PromptAnalyzer } from 'promptcache'
+import { PromptAnalyzer } from 'cachellm'
 
 // you can analyze prompts without making any API calls
 // useful for understanding what would get cached

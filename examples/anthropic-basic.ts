@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { optimizeAnthropic } from 'promptcache'
+import { optimizeAnthropic } from 'cachellm'
 
 const client = optimizeAnthropic(new Anthropic())
 

@@ -1,15 +1,15 @@
 <p align="center">
-  <h1 align="center">promptcache</h1>
+  <h1 align="center">cachellm</h1>
   <p align="center">
     Auto-optimize LLM prompt caching. One line of code, 60-90% savings on your API bill.
   </p>
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/promptcache"><img src="https://img.shields.io/npm/v/promptcache?style=flat-square&color=cb3837" alt="npm"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/npm/l/promptcache?style=flat-square&color=blue" alt="license"></a>
-  <a href="https://github.com/sahilempire/promptcache/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/promptcache/ci.yml?style=flat-square&label=tests" alt="CI"></a>
-  <a href="https://github.com/sahilempire/promptcache"><img src="https://img.shields.io/github/stars/sahilempire/promptcache?style=flat-square" alt="stars"></a>
+  <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat-square&color=cb3837" alt="npm"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/npm/l/cachellm?style=flat-square&color=blue" alt="license"></a>
+  <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat-square&label=tests" alt="CI"></a>
+  <a href="https://github.com/sahilempire/cachellm"><img src="https://img.shields.io/github/stars/sahilempire/cachellm?style=flat-square" alt="stars"></a>
 </p>
 
 ---
@@ -28,14 +28,14 @@ You're paying full price for the **same instructions** on every single request.
 
 Anthropic and OpenAI both support prompt caching (up to **90% off** cached tokens), but configuring it correctly is manual, tedious, and easy to mess up.
 
-**promptcache does it for you. Automatically. In one line.**
+**cachellm does it for you. Automatically. In one line.**
 
 ---
 
 ## Install
 
 ```bash
-npm install promptcache
+npm install cachellm
 ```
 
 ---
@@ -46,7 +46,7 @@ npm install promptcache
 
 ```typescript
 import Anthropic from '@anthropic-ai/sdk'
-import { optimizeAnthropic } from 'promptcache'
+import { optimizeAnthropic } from 'cachellm'
 
 // wrap your client — that's the only change
 const client = optimizeAnthropic(new Anthropic())
@@ -66,7 +66,7 @@ client.printStats()
 ```
 ┌──────────────────────────────────────────────┐
 │                                              │
-│  promptcache                                 │
+│  cachellm                                 │
 │  Requests:      48                           │
 │  Cache hits:    42 (87.5%)                   │
 │  Tokens cached: 284.2K                       │
@@ -79,7 +79,7 @@ client.printStats()
 
 ```typescript
 import OpenAI from 'openai'
-import { optimizeOpenAI } from 'promptcache'
+import { optimizeOpenAI } from 'cachellm'
 
 const client = optimizeOpenAI(new OpenAI())
 
@@ -102,7 +102,7 @@ client.printStats()
 <tr>
 <td width="50%">
 
-**Without promptcache**
+**Without cachellm**
 
 ```
 You → send 2000 token system prompt
@@ -120,7 +120,7 @@ Monthly bill: $300
 </td>
 <td width="50%">
 
-**With promptcache**
+**With cachellm**
 
 ```
 You → send 2000 token system prompt
@@ -145,7 +145,7 @@ Monthly bill: $40
 
 ### For Anthropic (Claude)
 
-promptcache sits between your code and the API. It:
+cachellm sits between your code and the API. It:
 
 1. **Analyzes** your prompt — finds system instructions, tool definitions, documents
 2. **Scores** each segment — is this stable (same every call) or variable (changes each call)?
@@ -156,7 +156,7 @@ All transparent. Your code doesn't change. The API gets optimized params.
 
 ### For OpenAI (GPT)
 
-OpenAI caching is automatic — but it only works if your prompt prefix matches across requests. promptcache reorders your system messages so the longest, most stable content comes first, maximizing the prefix match.
+OpenAI caching is automatic — but it only works if your prompt prefix matches across requests. cachellm reorders your system messages so the longest, most stable content comes first, maximizing the prefix match.
 
 ---
 
@@ -216,7 +216,7 @@ client.resetStats()
 | **Max savings** | **90%** on cached tokens | **50%** on cached tokens |
 | **Min tokens to cache** | 1,024 | 1,024 |
 | **Cache TTL** | 5 min or 1 hour | 5-10 min |
-| **What promptcache does** | Injects `cache_control` breakpoints automatically | Reorders messages for better prefix matching |
+| **What cachellm does** | Injects `cache_control` breakpoints automatically | Reorders messages for better prefix matching |
 | **Cache write cost** | +25% (5min) or +100% (1hr) | Free |
 
 ---
@@ -226,7 +226,7 @@ client.resetStats()
 Don't want the wrapper? Just analyze your prompts to see what's cacheable:
 
 ```typescript
-import { PromptAnalyzer } from 'promptcache'
+import { PromptAnalyzer } from 'cachellm'
 
 const analyzer = new PromptAnalyzer()
 const analysis = analyzer.analyzeAnthropicParams({
@@ -272,17 +272,17 @@ Check the [`examples/`](./examples) directory:
 - [x] OpenAI adapter (prefix optimization)
 - [x] Stats tracking with cost estimation
 - [x] Standalone prompt analysis
-- [ ] Gemini adapter ([#1](https://github.com/sahilempire/promptcache/issues/1))
-- [ ] Streaming support ([#2](https://github.com/sahilempire/promptcache/issues/2))
-- [ ] Vercel AI SDK middleware ([#4](https://github.com/sahilempire/promptcache/issues/4))
+- [ ] Gemini adapter ([#1](https://github.com/sahilempire/cachellm/issues/1))
+- [ ] Streaming support ([#2](https://github.com/sahilempire/cachellm/issues/2))
+- [ ] Vercel AI SDK middleware ([#4](https://github.com/sahilempire/cachellm/issues/4))
 - [ ] CLI tool for analyzing prompts in your codebase
-- [ ] Python package (`pip install promptcache`)
+- [ ] Python package (`pip install cachellm`)
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Check the [open issues](https://github.com/sahilempire/promptcache/issues) — anything tagged `good first issue` is a great place to start.
+Contributions are welcome! Check the [open issues](https://github.com/sahilempire/cachellm/issues) — anything tagged `good first issue` is a great place to start.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
 

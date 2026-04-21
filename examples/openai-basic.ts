@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { optimizeOpenAI } from 'promptcache'
+import { optimizeOpenAI } from 'cachellm'
 
 const client = optimizeOpenAI(new OpenAI())
 
