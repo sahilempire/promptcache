@@ -64,15 +64,15 @@ client.printStats()
 ```
 
 ```
-┌──────────────────────────────────────────────┐
-│                                              │
-│  cachellm                                 │
-│  Requests:      48                           │
-│  Cache hits:    42 (87.5%)                   │
-│  Tokens cached: 284.2K                       │
-│  Saved:         $2.14 (84.3%)                │
-│                                              │
-└──────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│                                                  │
+│  cachellm                                        │
+│  Requests:      48                               │
+│  Cache hits:    42 (87.5%)                        │
+│  Tokens cached: 284.2K                           │
+│  Saved:         $2.14 (84.3%)                    │
+│                                                  │
+└──────────────────────────────────────────────────┘
 ```
 
 ### OpenAI (GPT) — saves up to 50%
@@ -96,7 +96,100 @@ client.printStats()
 
 ---
 
-## What It Does
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Your Application                         │
+│                                                                 │
+│   const client = optimizeAnthropic(new Anthropic())             │
+│                         │                                       │
+└─────────────────────────┼───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      cachellm (Proxy Layer)                     │
+│                                                                 │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
+│  │  Analyzer    │  │  Strategy    │  │  Stats Tracker         │ │
+│  │             │  │              │  │                        │ │
+│  │ scores each │  │ picks where  │  │ tracks hits, misses,   │ │
+│  │ segment by  │  │ to place     │  │ tokens, and cost       │ │
+│  │ stability   │  │ breakpoints  │  │ savings per request    │ │
+│  └──────┬──────┘  └──────┬───────┘  └────────────┬───────────┘ │
+│         │                │                       │              │
+│         ▼                ▼                       │              │
+│  ┌─────────────────────────────────┐             │              │
+│  │  Provider Adapters              │             │              │
+│  │                                 │             │              │
+│  │  ┌───────────┐ ┌─────────────┐ │             │              │
+│  │  │ Anthropic │ │   OpenAI    │ │             │              │
+│  │  │           │ │             │ │             │              │
+│  │  │ injects   │ │ reorders    │ │             │              │
+│  │  │ cache_    │ │ messages    │ │             │              │
+│  │  │ control   │ │ for prefix  │ │             │              │
+│  │  │ breaks    │ │ matching    │ │             │              │
+│  │  └─────┬─────┘ └──────┬──────┘ │             │              │
+│  └────────┼──────────────┼────────┘             │              │
+│           │              │                       │              │
+└───────────┼──────────────┼───────────────────────┼──────────────┘
+            │              │                       │
+            ▼              ▼                       ▼
+┌─────────────────┐ ┌─────────────┐  ┌─────────────────────────┐
+│  Claude API     │ │  GPT API    │  │  Terminal / Dashboard    │
+│                 │ │             │  │                         │
+│  cache_control  │ │  automatic  │  │  ┌───────────────────┐  │
+│  breakpoints    │ │  prefix     │  │  │ Saved: $104/month │  │
+│  → 90% off      │ │  matching   │  │  │ Hit rate: 87.5%   │  │
+│  cached tokens  │ │  → 50% off  │  │  └───────────────────┘  │
+└─────────────────┘ └─────────────┘  └─────────────────────────┘
+```
+
+---
+
+## How The Analysis Works
+
+```
+┌─────────────────────────── Your Prompt ───────────────────────────┐
+│                                                                   │
+│  ┌─ System Prompt ──────────────────────────────────────────────┐ │
+│  │  "You are a cooking expert who knows recipes from every      │ │
+│  │   cuisine. You provide step-by-step instructions with        │ │
+│  │   quantities, prep time, and cooking tips..."                │ │
+│  │                                                              │ │
+│  │  Stability: ████████████████████████████████████████ 0.95    │ │
+│  │  Tokens:    ~2,100                                          │ │
+│  │  Verdict:   ✅ CACHE THIS (saves ~$0.006/request)           │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  ┌─ Tool Definitions ──────────────────────────────────────────┐ │
+│  │  get_weather, search_restaurants, book_reservation          │ │
+│  │  (3 tools with full JSON schemas)                           │ │
+│  │                                                              │ │
+│  │  Stability: ████████████████████████████████████████ 0.95    │ │
+│  │  Tokens:    ~800                                            │ │
+│  │  Verdict:   ✅ CACHE THIS                                   │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  ┌─ Conversation History ──────────────────────────────────────┐ │
+│  │  User: "What's the weather in Paris?"                       │ │
+│  │  Assistant: "Currently 18°C and sunny..."                   │ │
+│  │  User: "Find me a good restaurant nearby"                   │ │
+│  │                                                              │ │
+│  │  Older turns:                                                │ │
+│  │  Stability: ██████████████████████░░░░░░░░░░░░░░░░░ 0.70    │ │
+│  │  Last turn:                                                  │ │
+│  │  Stability: ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0.10    │ │
+│  │  Verdict:   ⏭️  SKIP (changes every request)                │ │
+│  └──────────────────────────────────────────────────────────────┘ │
+│                                                                   │
+│  Estimated savings: 84% on input tokens                          │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## What It Does — Before & After
 
 <table>
 <tr>
@@ -141,22 +234,52 @@ Monthly bill: $40
 
 ---
 
-## How It Works
+## Provider Support
 
-### For Anthropic (Claude)
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                          Supported Providers                             │
+│                                                                          │
+│  ┌─ Anthropic (Claude) ──────┐  ┌─ OpenAI (GPT) ──────────────────┐    │
+│  │                           │  │                                  │    │
+│  │  Method:  Manual          │  │  Method:  Automatic              │    │
+│  │           breakpoints     │  │           prefix matching        │    │
+│  │                           │  │                                  │    │
+│  │  Savings: up to 90%       │  │  Savings: up to 50%             │    │
+│  │  Min tokens: 1,024        │  │  Min tokens: 1,024              │    │
+│  │  TTL: 5 min / 1 hour      │  │  TTL: 5-10 min                  │    │
+│  │                           │  │                                  │    │
+│  │  cachellm injects         │  │  cachellm reorders              │    │
+│  │  cache_control            │  │  messages for better             │    │
+│  │  breakpoints at           │  │  prefix matching                 │    │
+│  │  optimal positions        │  │                                  │    │
+│  └───────────────────────────┘  └──────────────────────────────────┘    │
+│                                                                          │
+│  ┌─ Gemini (coming soon) ────┐                                          │
+│  │                           │  Track progress: github.com/             │
+│  │  Method:  Explicit cache  │  sahilempire/cachellm/issues/1           │
+│  │           objects via API │                                          │
+│  │  Savings: up to 90%       │                                          │
+│  │  Min tokens: 32,768       │                                          │
+│  └───────────────────────────┘                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
 
-cachellm sits between your code and the API. It:
+---
 
-1. **Analyzes** your prompt — finds system instructions, tool definitions, documents
-2. **Scores** each segment — is this stable (same every call) or variable (changes each call)?
-3. **Injects** `cache_control` breakpoints at the right positions
-4. **Tracks** cache hit rates and shows you the actual dollar savings
+## Cost Savings Breakdown
 
-All transparent. Your code doesn't change. The API gets optimized params.
+```
+                     Without cachellm          With cachellm
+                     ─────────────────         ───────────────
+  100 requests/day   │██████████████│ $9.00    │██│ $1.35          ← save $7.65/day
+  500 requests/day   │██████████████│ $45.00   │██│ $6.75          ← save $38.25/day
+  1K  requests/day   │██████████████│ $90.00   │██│ $13.50         ← save $76.50/day
+  10K requests/day   │██████████████│ $900     │██│ $135           ← save $765/day
 
-### For OpenAI (GPT)
-
-OpenAI caching is automatic — but it only works if your prompt prefix matches across requests. cachellm reorders your system messages so the longest, most stable content comes first, maximizing the prefix match.
+  * Based on 3K token system prompt, Claude Sonnet, 90% cache hit rate
+  * Actual savings depend on your prompt structure and call patterns
+```
 
 ---
 
@@ -208,19 +331,6 @@ client.resetStats()
 
 ---
 
-## Provider Comparison
-
-| | Anthropic (Claude) | OpenAI (GPT) |
-|:---|:---|:---|
-| **How caching works** | Manual — you mark breakpoints with `cache_control` | Automatic — prefix matching, no control |
-| **Max savings** | **90%** on cached tokens | **50%** on cached tokens |
-| **Min tokens to cache** | 1,024 | 1,024 |
-| **Cache TTL** | 5 min or 1 hour | 5-10 min |
-| **What cachellm does** | Injects `cache_control` breakpoints automatically | Reorders messages for better prefix matching |
-| **Cache write cost** | +25% (5min) or +100% (1hr) | Free |
-
----
-
 ## Standalone Analysis
 
 Don't want the wrapper? Just analyze your prompts to see what's cacheable:
@@ -243,15 +353,61 @@ console.log(analysis.cacheableTokens)         // total tokens worth caching
 
 ---
 
+## Project Structure
+
+```
+cachellm/
+├── src/
+│   ├── index.ts                 ← public API (re-exports everything)
+│   ├── types.ts                 ← TypeScript interfaces
+│   │
+│   ├── core/
+│   │   ├── analyzer.ts          ← scores prompt segments for cacheability
+│   │   ├── hasher.ts            ← content fingerprinting (djb2)
+│   │   ├── differ.ts            ← tracks stability across requests
+│   │   ├── strategy.ts          ← breakpoint placement algorithm
+│   │   └── token-estimator.ts   ← fast token counting (no tiktoken)
+│   │
+│   ├── providers/
+│   │   ├── anthropic.ts         ← injects cache_control via Proxy
+│   │   └── openai.ts            ← reorders for prefix matching
+│   │
+│   ├── stats/
+│   │   └── tracker.ts           ← records hits, calculates savings
+│   │
+│   └── utils/
+│       ├── lru.ts               ← zero-dep LRU cache (~60 lines)
+│       └── logger.ts            ← debug logging
+│
+├── tests/                       ← 35 tests, all passing
+├── examples/                    ← ready-to-run usage examples
+└── .github/workflows/           ← CI + automated npm releases
+```
+
+---
+
 ## Design Principles
 
-- **Zero dependencies** — no tiktoken (3MB wasm), no Redis, no external services. Token estimation uses a fast heuristic. If you need exact counts, pass a custom `tokenCounter` in options.
-
-- **Zero infrastructure** — everything runs in-process. No proxy servers, no databases, no config files. `npm install` and you're done.
-
-- **Zero code changes** — uses JavaScript `Proxy` to wrap your existing client. All original methods, properties, and TypeScript types pass through unchanged.
-
-- **< 15KB gzipped** — smaller than most icons on your page.
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  Zero dependencies          No tiktoken (3MB), no Redis,         │
+│  ────────────────           no external services. Token          │
+│                             estimation uses a fast heuristic.    │
+│                                                                  │
+│  Zero infrastructure        Everything runs in-process.          │
+│  ────────────────────       No proxy, no database, no config.    │
+│                             npm install and you're done.         │
+│                                                                  │
+│  Zero code changes          JavaScript Proxy wraps your client.  │
+│  ────────────────           All methods, props, and TS types     │
+│                             pass through unchanged.              │
+│                                                                  │
+│  < 15KB gzipped             Smaller than most icons on           │
+│  ──────────────             your page.                           │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
