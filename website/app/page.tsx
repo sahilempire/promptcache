@@ -53,15 +53,17 @@ function Terminal() {
       {step >= 4 && <div className="cmt">[cachellm] breakpoints: system(2100tk) + tools(800tk)</div>}
       {step >= 5 && <div style={{ color: "#000", fontWeight: 700 }}>[cachellm] cache hit — 2,100 tokens at 90% discount</div>}
       {step >= 6 && (
-        <div style={{ marginTop: 16, borderTop: "1px solid #e2e8f0", paddingTop: 12 }}>
-          <div className="cmt">┌─────────────────────────────────────────┐</div>
-          <div>│ <span style={{ fontWeight: 700 }}>cachellm</span>                              │</div>
-          <div>│ requests      <span style={{ fontWeight: 700 }}>48</span>                        │</div>
-          <div>│ cache_hits    <span style={{ fontWeight: 700 }}>42</span> <span className="cmt">(87.5%)</span>                 │</div>
-          <div>│ tokens_saved  <span style={{ fontWeight: 700 }}>284,200</span>                   │</div>
-          <div>│ cost_saved    <span style={{ fontWeight: 700 }}>$2.14</span> <span className="cmt">(84.3%)</span>              │</div>
-          <div className="cmt">└─────────────────────────────────────────┘</div>
-        </div>
+        <pre style={{ marginTop: 16, borderTop: "1px solid #e2e8f0", paddingTop: 12, fontFamily: "inherit", fontSize: "inherit", lineHeight: "inherit", margin: 0 }}>{
+`┌───────────────────────────────────┐
+│                                   │
+│  cachellm                         │
+│  requests:      48                │
+│  cache_hits:    42 (87.5%)        │
+│  tokens_saved:  284,200           │
+│  cost_saved:    $2.14 (84.3%)     │
+│                                   │
+└───────────────────────────────────┘`
+        }</pre>
       )}
     </div>
   );
@@ -115,14 +117,14 @@ export default function Home() {
 
           <p className="body-serif mt-6 max-w-xl animate-in d3" style={{ color: "#1a1a1a" }}>
             Auto-optimize LLM prompt caching. One line of code.{" "}
-            <span style={{ fontWeight: 600 }}>60–90% savings</span> on your Claude &amp; GPT API bills.
+            <span style={{ fontWeight: 600 }}>60–90% savings</span>{" "}on your Claude &amp; GPT API bills.
           </p>
 
           <div className="flex flex-wrap gap-3 mt-8 animate-in d4">
-            <button onClick={copy} className="btn-editorial" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>
+            <button onClick={copy} className="btn-editorial" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, gap: 12 }}>
               <span style={{ color: "#757575" }}>$</span>
-              npm install cachellm
-              <span style={{ color: "#999", fontSize: 10, letterSpacing: "1px" }}>{copied ? "COPIED" : "COPY"}</span>
+              <span>npm install cachellm</span>
+              <span style={{ color: "#999", fontSize: 10, letterSpacing: "1px", borderLeft: "1px solid #e2e8f0", paddingLeft: 12 }}>{copied ? "COPIED" : "COPY"}</span>
             </button>
             <a href="https://github.com/sahilempire/cachellm" target="_blank" className="btn-editorial">
               VIEW SOURCE →
@@ -159,7 +161,7 @@ export default function Home() {
           <div className="ribbon mb-8 inline-block">THE PROBLEM</div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-            <div className="pr-8 pb-8 md:pb-0" style={{ borderRight: "none" }}>
+            <div className="pr-8 pb-8 md:pb-0" style={{ borderRight: "1px solid #000" }}>
               <div className="kicker mb-4" style={{ color: "#757575" }}>WITHOUT CACHELLM</div>
               <div className="code-block" style={{ fontSize: 13 }}>
                 <div><span className="cmt">call_1:</span> system_prompt (2000tk) → <span style={{ color: "#d73a49" }}>FULL PRICE</span></div>
@@ -171,7 +173,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="pl-0 md:pl-8" style={{ borderLeft: "none" }}>
+            <div className="pl-0 md:pl-8 pt-8 md:pt-0">
               <div className="kicker mb-4">WITH CACHELLM</div>
               <div className="code-block" style={{ fontSize: 13 }}>
                 <div><span className="cmt">call_1:</span> system_prompt (2000tk) → <span style={{ color: "#6f42c1" }}>CACHE WRITE</span></div>
@@ -221,11 +223,11 @@ export default function Home() {
             <div><span className="kw">import</span> {"{ optimizeAnthropic }"} <span className="kw">from</span> <span className="str">&apos;cachellm&apos;</span></div>
             <div style={{ marginTop: 16 }}><span className="cmt">// wrap once — everything else stays the same</span></div>
             <div><span className="kw">const</span> client = <span className="fn">optimizeAnthropic</span>(<span className="kw">new</span> <span className="fn">Anthropic</span>())</div>
-            <div style={{ marginTop: 16 }}><span className="kw">const</span> res = <span className="kw">await</span> client.messages.<span className="fn">create</span>({"{"})</div>
+            <div style={{ marginTop: 16 }}><span className="kw">const</span> res = <span className="kw">await</span> client.messages.<span className="fn">create</span>({"{"}</div>
             <div style={{ paddingLeft: 24 }}>model: <span className="str">&apos;claude-sonnet-4-20250514&apos;</span>,</div>
             <div style={{ paddingLeft: 24 }}>system: <span className="str">&apos;You are a helpful assistant...&apos;</span>,</div>
             <div style={{ paddingLeft: 24 }}>messages: [{"{ role: 'user', content: 'Hello' }"}],</div>
-            <div>{"}"}</div>
+            <div>{"})"}</div>
             <div style={{ marginTop: 16 }}>client.<span className="fn">printStats</span>() <span className="cmt">// see your savings</span></div>
           </div>
         </section>
