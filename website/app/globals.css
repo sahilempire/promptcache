@@ -1,12 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0a0a0a;
-  --fg: #e0e0e0;
-  --dim: #555;
-  --accent: #f97316;
-  --green: #22c55e;
-  --border: #222;
+  --bg: #050505;
+  --fg: #d0d0d0;
+  --glow: #00ffaa;
+  --glow-dim: rgba(0, 255, 170, 0.15);
+  --orange: #f97316;
+  --grid: rgba(0, 255, 170, 0.04);
+  --border: rgba(0, 255, 170, 0.1);
+  --panel: rgba(0, 255, 170, 0.03);
 }
 
 @theme inline {
@@ -17,28 +19,86 @@
 }
 
 * {
-  font-family: var(--font-geist-mono), 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-family: var(--font-geist-mono), 'SF Mono', 'Fira Code', monospace;
 }
 
 body {
   background: var(--bg);
   color: var(--fg);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: hidden;
 }
 
 ::selection {
-  background: #f97316;
+  background: var(--glow);
   color: #000;
 }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(0,255,170,0.2); border-radius: 2px; }
 
+/* ─── GRID BACKGROUND ─── */
+.grid-bg {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ─── SCAN LINE ─── */
+.scanline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--glow), transparent);
+  opacity: 0.3;
+  z-index: 50;
+  pointer-events: none;
+  animation: scanMove 6s linear infinite;
+}
+
+@keyframes scanMove {
+  0% { top: -2px; }
+  100% { top: 100vh; }
+}
+
+/* ─── ANIMATIONS ─── */
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,255,170,0.1), inset 0 0 8px rgba(0,255,170,0.03); }
+  50% { box-shadow: 0 0 20px rgba(0,255,170,0.2), inset 0 0 15px rgba(0,255,170,0.05); }
+}
+
+@keyframes radarSweep {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(0,255,170,0.1); }
+  50% { border-color: rgba(0,255,170,0.3); }
+}
+
+@keyframes dataStream {
+  0% { transform: translateY(0); opacity: 0.3; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-20px); opacity: 0.3; }
 }
 
 @keyframes typewriter {
@@ -46,29 +106,17 @@ body {
   to { width: 100%; }
 }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes countUp {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .animate-fade-up {
-  animation: fadeUp 0.5s ease-out forwards;
+  animation: fadeUp 0.6s ease-out forwards;
   opacity: 0;
 }
 
-.animate-slide-in {
-  animation: slideIn 0.4s ease-out forwards;
-  opacity: 0;
+.animate-glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+.animate-border-glow {
+  animation: borderGlow 3s ease-in-out infinite;
 }
 
 .delay-1 { animation-delay: 0.1s; }
@@ -81,3 +129,70 @@ body {
 .delay-8 { animation-delay: 0.8s; }
 .delay-9 { animation-delay: 0.9s; }
 .delay-10 { animation-delay: 1.0s; }
+
+/* ─── HUD PANEL ─── */
+.hud-panel {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  position: relative;
+  backdrop-filter: blur(2px);
+}
+
+.hud-panel::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 10px;
+  right: 10px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glow), transparent);
+  opacity: 0.4;
+}
+
+/* ─── LABEL ─── */
+.hud-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(0,255,170,0.5);
+}
+
+/* ─── GLOW TEXT ─── */
+.glow-text {
+  color: var(--glow);
+  text-shadow: 0 0 10px rgba(0,255,170,0.5), 0 0 30px rgba(0,255,170,0.2);
+}
+
+.glow-text-orange {
+  color: var(--orange);
+  text-shadow: 0 0 10px rgba(249,115,22,0.5), 0 0 30px rgba(249,115,22,0.2);
+}
+
+/* ─── CORNER BRACKETS ─── */
+.corner-brackets {
+  position: relative;
+}
+
+.corner-brackets::before,
+.corner-brackets::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--glow);
+  opacity: 0.4;
+}
+
+.corner-brackets::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+
+.corner-brackets::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
