@@ -148,7 +148,7 @@ export class StatsTracker {
 
     const lines = [
       '',
-      '  \x1b[1mprompтcache\x1b[0m',
+      '  \x1b[1mcachellm\x1b[0m',
       `  Requests:      ${stats.totalRequests}`,
       `  Cache hits:    ${stats.cacheHits} (${(stats.hitRate * 100).toFixed(1)}%)`,
       `  Tokens cached: ${formatNumber(stats.cachedInputTokens)}`,
