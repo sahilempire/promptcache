@@ -1,127 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 
-/* ═══════════════════════════════════════════════════════════
-   WAVEFORM CANVAS — glowing sine wave like a radar display
-   ═══════════════════════════════════════════════════════════ */
-function Waveform({ height = 80, color = "#00ffaa" }: { height?: number; color?: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef = useRef<number>(0);
-  const offset = useRef(0);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-
-    const draw = () => {
-      canvas.width = canvas.offsetWidth * 2;
-      canvas.height = height * 2;
-      ctx.scale(2, 2);
-
-      const w = canvas.offsetWidth;
-      const h = height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = color;
-
-      for (let x = 0; x < w; x++) {
-        const y = h / 2 +
-          Math.sin((x * 0.02) + offset.current) * (h * 0.25) +
-          Math.sin((x * 0.005) + offset.current * 0.5) * (h * 0.15) +
-          Math.sin((x * 0.05) + offset.current * 2) * (h * 0.05);
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      // dim fill under curve
-      ctx.lineTo(w, h);
-      ctx.lineTo(0, h);
-      ctx.closePath();
-      ctx.fillStyle = color.replace(")", ",0.05)").replace("rgb", "rgba");
-      ctx.shadowBlur = 0;
-      ctx.fill();
-
-      offset.current += 0.03;
-      animRef.current = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => cancelAnimationFrame(animRef.current);
-  }, [height, color]);
-
-  return <canvas ref={canvasRef} className="w-full" style={{ height }} />;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   RADAR — rotating sweep
-   ═══════════════════════════════════════════════════════════ */
-function Radar({ size = 120 }: { size?: number }) {
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      {/* rings */}
-      <div className="absolute inset-0 rounded-full border border-[rgba(0,255,170,0.1)]" />
-      <div className="absolute inset-[15%] rounded-full border border-[rgba(0,255,170,0.08)]" />
-      <div className="absolute inset-[30%] rounded-full border border-[rgba(0,255,170,0.06)]" />
-      {/* crosshair */}
-      <div className="absolute top-0 bottom-0 left-1/2 w-px bg-[rgba(0,255,170,0.08)]" />
-      <div className="absolute left-0 right-0 top-1/2 h-px bg-[rgba(0,255,170,0.08)]" />
-      {/* sweep */}
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: "conic-gradient(from 0deg, transparent 0%, rgba(0,255,170,0.3) 8%, transparent 12%)",
-          animation: "radarSweep 4s linear infinite",
-        }}
-      />
-      {/* center dot */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#00ffaa]" style={{ boxShadow: "0 0 8px #00ffaa" }} />
-      {/* blips */}
-      <div className="absolute top-[25%] left-[60%] w-1 h-1 rounded-full bg-[#00ffaa] opacity-60" style={{ animation: "blink 2s infinite" }} />
-      <div className="absolute top-[65%] left-[30%] w-1 h-1 rounded-full bg-[#00ffaa] opacity-40" style={{ animation: "blink 3s infinite 1s" }} />
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   TYPEWRITER
-   ═══════════════════════════════════════════════════════════ */
-function TypeWriter({ text, speed = 50, delay = 0 }: { text: string; speed?: number; delay?: number }) {
-  const [displayed, setDisplayed] = useState("");
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setStarted(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-
-  useEffect(() => {
-    if (!started || displayed.length >= text.length) return;
-    const t = setTimeout(() => setDisplayed(text.slice(0, displayed.length + 1)), speed);
-    return () => clearTimeout(t);
-  }, [displayed, text, speed, started]);
-
-  return (
-    <span>
-      {displayed}
-      {displayed.length < text.length && started && (
-        <span className="inline-block w-[7px] h-[15px] bg-[#00ffaa] ml-[2px] align-middle" style={{ animation: "blink 0.7s infinite" }} />
-      )}
-    </span>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   COUNTER
-   ═══════════════════════════════════════════════════════════ */
-function Counter({ end, delay = 0, suffix = "" }: { end: number; delay?: number; suffix?: string }) {
+/* ═══════ COUNTER ═══════ */
+function Counter({ end, suffix = "", delay = 0 }: { end: number; suffix?: string; delay?: number }) {
   const [val, setVal] = useState(0);
   const [started, setStarted] = useState(false);
 
@@ -132,7 +14,7 @@ function Counter({ end, delay = 0, suffix = "" }: { end: number; delay?: number;
 
   useEffect(() => {
     if (!started) return;
-    const steps = 50;
+    const steps = 40;
     const inc = end / steps;
     let cur = 0;
     const timer = setInterval(() => {
@@ -143,68 +25,49 @@ function Counter({ end, delay = 0, suffix = "" }: { end: number; delay?: number;
     return () => clearInterval(timer);
   }, [end, started]);
 
-  return <span>{val}{suffix}</span>;
+  return <>{val}{suffix}</>;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   TERMINAL DEMO — animated step-by-step
-   ═══════════════════════════════════════════════════════════ */
-function TerminalDemo() {
+/* ═══════ TERMINAL ═══════ */
+function Terminal() {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    const timers = [
-      setTimeout(() => setStep(1), 600),
-      setTimeout(() => setStep(2), 1800),
-      setTimeout(() => setStep(3), 3000),
-      setTimeout(() => setStep(4), 3800),
-      setTimeout(() => setStep(5), 4600),
-      setTimeout(() => setStep(6), 5800),
-      setTimeout(() => setStep(7), 7200),
+    const t = [
+      setTimeout(() => setStep(1), 500),
+      setTimeout(() => setStep(2), 1500),
+      setTimeout(() => setStep(3), 2800),
+      setTimeout(() => setStep(4), 3600),
+      setTimeout(() => setStep(5), 4400),
+      setTimeout(() => setStep(6), 5600),
     ];
-    return () => timers.forEach(clearTimeout);
+    return () => t.forEach(clearTimeout);
   }, []);
 
   return (
-    <div className="hud-panel p-5 text-[11px] leading-relaxed">
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[rgba(0,255,170,0.1)]">
-        <div className="w-2 h-2 rounded-full bg-[#ff5f57]" />
-        <div className="w-2 h-2 rounded-full bg-[#febc2e]" />
-        <div className="w-2 h-2 rounded-full bg-[#28c840]" />
-        <span className="ml-3 text-[rgba(0,255,170,0.3)] text-[10px]">SYSTEM TERMINAL v2.1</span>
-      </div>
-
-      {step >= 0 && <div className="animate-fade-up"><span className="text-[rgba(0,255,170,0.4)]">~$</span> <span className="glow-text">npm install</span> cachellm</div>}
-      {step >= 1 && <div className="animate-fade-up text-[#444] mt-1">+ cachellm@0.1.2 added 1 package in 0.8s</div>}
-      {step >= 2 && <div className="mt-3 animate-fade-up"><span className="text-[rgba(0,255,170,0.4)]">~$</span> <span className="glow-text">node</span> app.ts</div>}
-      {step >= 3 && <div className="animate-fade-up text-[#444] mt-1">[cachellm] analyzing prompt structure... 3 segments detected</div>}
-      {step >= 4 && <div className="animate-fade-up text-[#444]">[cachellm] breakpoints: system_prompt(2100tk) + tools(800tk)</div>}
-      {step >= 5 && <div className="animate-fade-up glow-text mt-1">[cachellm] ✓ cache hit — 2,100 tokens at 90% discount</div>}
+    <div className="code-block" style={{ background: "#fff", border: "2px solid #000" }}>
+      {step >= 0 && <div><span className="cmt">$</span> npm install cachellm</div>}
+      {step >= 1 && <div className="cmt">added 1 package in 0.8s</div>}
+      {step >= 2 && <div style={{ marginTop: 12 }}><span className="cmt">$</span> node app.ts</div>}
+      {step >= 3 && <div className="cmt">[cachellm] analyzing... 3 segments found</div>}
+      {step >= 4 && <div className="cmt">[cachellm] breakpoints: system(2100tk) + tools(800tk)</div>}
+      {step >= 5 && <div style={{ color: "#000", fontWeight: 700 }}>[cachellm] cache hit — 2,100 tokens at 90% discount</div>}
       {step >= 6 && (
-        <div className="mt-4 animate-fade-up">
-          <div className="text-[rgba(0,255,170,0.2)]">┌─────────────────────────────────────────┐</div>
-          <div className="text-[rgba(0,255,170,0.2)]">│ <span className="hud-label">CACHE PERFORMANCE REPORT</span>                │</div>
-          <div className="text-[rgba(0,255,170,0.2)]">├─────────────────────────────────────────┤</div>
-          <div>│  requests     <span className="text-white">48</span>                        │</div>
-          <div>│  cache_hits   <span className="glow-text">42</span> <span className="text-[#444]">(87.5%)</span>                 │</div>
-          <div>│  tokens_saved <span className="text-white">284,200</span>                   │</div>
-          <div>│  cost_saved   <span className="glow-text">$2.14</span> <span className="text-[#444]">(84.3%)</span>              │</div>
-          <div className="text-[rgba(0,255,170,0.2)]">└─────────────────────────────────────────┘</div>
-        </div>
-      )}
-      {step >= 7 && (
-        <div className="mt-3 animate-fade-up">
-          <span className="text-[rgba(0,255,170,0.4)]">~$</span>{" "}
-          <span className="inline-block w-[7px] h-[13px] bg-[rgba(0,255,170,0.5)]" style={{ animation: "blink 1s infinite" }} />
+        <div style={{ marginTop: 16, borderTop: "1px solid #e2e8f0", paddingTop: 12 }}>
+          <div className="cmt">┌─────────────────────────────────────────┐</div>
+          <div>│ <span style={{ fontWeight: 700 }}>cachellm</span>                              │</div>
+          <div>│ requests      <span style={{ fontWeight: 700 }}>48</span>                        │</div>
+          <div>│ cache_hits    <span style={{ fontWeight: 700 }}>42</span> <span className="cmt">(87.5%)</span>                 │</div>
+          <div>│ tokens_saved  <span style={{ fontWeight: 700 }}>284,200</span>                   │</div>
+          <div>│ cost_saved    <span style={{ fontWeight: 700 }}>$2.14</span> <span className="cmt">(84.3%)</span>              │</div>
+          <div className="cmt">└─────────────────────────────────────────┘</div>
         </div>
       )}
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MAIN PAGE
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════ MAIN PAGE ═══════ */
 export default function Home() {
   const [copied, setCopied] = useState(false);
 
@@ -216,290 +79,349 @@ export default function Home() {
 
   return (
     <>
-      {/* Background effects */}
-      <div className="grid-bg" />
-      <div className="scanline" />
-
-      <main className="relative z-10 max-w-[900px] mx-auto px-6 py-20">
-
-        {/* ═══════ NAV BAR ═══════ */}
-        <nav className="flex items-center justify-between mb-20 animate-fade-up text-[11px]">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-[#00ffaa] rounded-full" style={{ boxShadow: "0 0 8px #00ffaa" }} />
-            <span className="hud-label">cachellm</span>
-          </div>
+      {/* ═══════ NAV ═══════ */}
+      <nav style={{ borderBottom: "1px solid #000" }}>
+        <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between" style={{ height: 48 }}>
+          <span className="kicker" style={{ fontSize: 14, letterSpacing: "0.5px" }}>CACHELLM</span>
           <div className="flex gap-6">
-            <a href="https://github.com/sahilempire/cachellm" target="_blank" className="text-[#555] hover:text-[#00ffaa] transition-colors">GITHUB</a>
-            <a href="https://www.npmjs.com/package/cachellm" target="_blank" className="text-[#555] hover:text-[#00ffaa] transition-colors">NPM</a>
-            <a href="https://github.com/sahilempire/cachellm#quick-start" target="_blank" className="text-[#555] hover:text-[#00ffaa] transition-colors">DOCS</a>
+            {["GITHUB", "NPM", "DOCS"].map((label, i) => (
+              <a
+                key={label}
+                href={
+                  label === "GITHUB" ? "https://github.com/sahilempire/cachellm" :
+                  label === "NPM" ? "https://www.npmjs.com/package/cachellm" :
+                  "https://github.com/sahilempire/cachellm#quick-start"
+                }
+                target="_blank"
+                className="kicker-light hover:text-[#057dbc]"
+                style={{ transition: "color 120ms", textDecoration: "none" }}
+              >
+                {label}
+              </a>
+            ))}
           </div>
-        </nav>
+        </div>
+      </nav>
+
+      <main className="max-w-[1200px] mx-auto px-6">
 
         {/* ═══════ HERO ═══════ */}
-        <header className="mb-24">
-          <div className="hud-label mb-4 animate-fade-up">// SYSTEM ONLINE ─────────────────────────────</div>
+        <header className="pt-16 pb-12 animate-in" style={{ borderBottom: "2px solid #000" }}>
+          <div className="kicker mb-4 animate-in d1">OPEN SOURCE</div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 animate-fade-up delay-1">
-            <span className="glow-text"><TypeWriter text="cachellm" speed={100} /></span>
+          <h1 className="display animate-in d2" style={{ fontSize: "clamp(48px, 8vw, 80px)" }}>
+            cachellm
           </h1>
 
-          <p className="text-[14px] text-[#666] mb-2 max-w-xl animate-fade-up delay-3">
-            Auto-optimize LLM prompt caching.
-          </p>
-          <p className="text-[14px] text-[#888] mb-10 max-w-xl animate-fade-up delay-4">
-            One line of code. <span className="glow-text-orange">60-90% savings</span> on Claude &amp; GPT API bills.
-            <br />Zero dependencies. Zero config. Zero code changes.
+          <p className="body-serif mt-6 max-w-xl animate-in d3" style={{ color: "#1a1a1a" }}>
+            Auto-optimize LLM prompt caching. One line of code.{" "}
+            <span style={{ fontWeight: 600 }}>60–90% savings</span> on your Claude &amp; GPT API bills.
           </p>
 
-          <div className="flex flex-wrap gap-3 animate-fade-up delay-5">
-            <button
-              onClick={copy}
-              className="hud-panel px-5 py-3 text-[12px] hover:border-[rgba(0,255,170,0.4)] transition-all cursor-pointer flex items-center gap-3 group"
-            >
-              <span className="text-[rgba(0,255,170,0.4)]">$</span>
-              <span className="group-hover:glow-text transition-all">npm install cachellm</span>
-              <span className="text-[9px] text-[#333] ml-2 tracking-widest">{copied ? "COPIED" : "COPY"}</span>
+          <div className="flex flex-wrap gap-3 mt-8 animate-in d4">
+            <button onClick={copy} className="btn-editorial" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>
+              <span style={{ color: "#757575" }}>$</span>
+              npm install cachellm
+              <span style={{ color: "#999", fontSize: 10, letterSpacing: "1px" }}>{copied ? "COPIED" : "COPY"}</span>
             </button>
-
-            <a href="https://github.com/sahilempire/cachellm" target="_blank" className="hud-panel px-5 py-3 text-[12px] hover:border-[rgba(0,255,170,0.4)] transition-all flex items-center gap-2">
-              VIEW SOURCE ↗
+            <a href="https://github.com/sahilempire/cachellm" target="_blank" className="btn-editorial">
+              VIEW SOURCE →
             </a>
           </div>
-
-          <div className="hud-label mt-10 animate-fade-up delay-6">──────────────────────────────────────────────</div>
         </header>
 
-        {/* ═══════ STATS DASHBOARD ═══════ */}
-        <section className="mb-24 animate-fade-up delay-6">
-          <div className="hud-label mb-4">## PERFORMANCE_METRICS</div>
-
+        {/* ═══════ NUMBERS ═══════ */}
+        <section className="py-12 animate-in d5" style={{ borderBottom: "1px solid #e2e8f0" }}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
             {[
-              { label: "CACHE HIT RATE", value: 90, suffix: "%", color: "glow-text" },
-              { label: "COST REDUCTION", value: 84, suffix: "%", color: "glow-text" },
-              { label: "ZERO DEPS", value: 0, suffix: "KB", color: "text-white", static: true },
-              { label: "BUNDLE SIZE", value: 15, suffix: "KB", color: "text-white" },
-            ].map((stat, i) => (
-              <div key={i} className="hud-panel p-5 text-center corner-brackets">
-                <div className="hud-label mb-3">{stat.label}</div>
-                <div className={`text-3xl font-bold ${stat.color}`}>
-                  {stat.static ? `${stat.value}` : <Counter end={stat.value} delay={800 + i * 200} suffix={stat.suffix} />}
-                  {stat.static && stat.suffix}
+              { label: "CACHE HIT RATE", value: 90, suffix: "%" },
+              { label: "COST REDUCTION", value: 84, suffix: "%" },
+              { label: "DEPENDENCIES", value: 0, suffix: "", static: true },
+              { label: "BUNDLE SIZE", value: 15, suffix: "KB" },
+            ].map((s, i) => (
+              <div
+                key={i}
+                className="py-6 pr-8"
+                style={{ borderRight: i < 3 ? "1px solid #e2e8f0" : "none" }}
+              >
+                <div className="kicker-light mb-2">{s.label}</div>
+                <div className="display" style={{ fontSize: 40 }}>
+                  {s.static ? "0" : <Counter end={s.value} delay={400 + i * 150} suffix={s.suffix} />}
+                  {s.static && s.suffix}
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ═══════ WAVEFORM + RADAR ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## SIGNAL_MONITOR</div>
-
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_160px] gap-0">
-            <div className="hud-panel p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="hud-label">TOKEN SAVINGS WAVEFORM</span>
-                <span className="text-[9px] text-[rgba(0,255,170,0.3)]">LIVE</span>
-              </div>
-              <Waveform height={90} />
-            </div>
-            <div className="hud-panel p-4 flex flex-col items-center justify-center">
-              <span className="hud-label mb-3">CACHE STATUS</span>
-              <Radar size={100} />
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════ PROBLEM ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## THREAT_ANALYSIS</div>
+        {/* ═══════ THE PROBLEM ═══════ */}
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">THE PROBLEM</div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-            <div className="hud-panel p-6">
-              <div className="hud-label mb-4 text-red-400/50">UNOPTIMIZED SYSTEM</div>
-              <div className="space-y-3 text-[12px]">
-                <div className="flex justify-between"><span className="text-[#444]">call_001</span><span className="text-red-400">2000tk → FULL PRICE</span></div>
-                <div className="flex justify-between"><span className="text-[#444]">call_002</span><span className="text-red-400">2000tk → FULL PRICE</span></div>
-                <div className="flex justify-between"><span className="text-[#444]">call_003</span><span className="text-red-400">2000tk → FULL PRICE</span></div>
-                <div className="pt-3 mt-3 border-t border-[rgba(255,100,100,0.1)]">
-                  <div className="flex justify-between"><span className="text-[#444]">monthly_cost</span><span className="text-red-400 font-bold text-lg">$300</span></div>
+            <div className="pr-8 pb-8 md:pb-0" style={{ borderRight: "none" }}>
+              <div className="kicker mb-4" style={{ color: "#757575" }}>WITHOUT CACHELLM</div>
+              <div className="code-block" style={{ fontSize: 13 }}>
+                <div><span className="cmt">call_1:</span> system_prompt (2000tk) → <span style={{ color: "#d73a49" }}>FULL PRICE</span></div>
+                <div><span className="cmt">call_2:</span> system_prompt (2000tk) → <span style={{ color: "#d73a49" }}>FULL PRICE</span></div>
+                <div><span className="cmt">call_3:</span> system_prompt (2000tk) → <span style={{ color: "#d73a49" }}>FULL PRICE</span></div>
+                <div style={{ borderTop: "1px solid #e2e8f0", marginTop: 12, paddingTop: 12 }}>
+                  monthly_bill: <span style={{ fontSize: 20, fontWeight: 700, color: "#d73a49" }}>$300</span>
                 </div>
               </div>
             </div>
 
-            <div className="hud-panel p-6">
-              <div className="hud-label mb-4" style={{ color: "rgba(0,255,170,0.5)" }}>CACHELLM OPTIMIZED</div>
-              <div className="space-y-3 text-[12px]">
-                <div className="flex justify-between"><span className="text-[#444]">call_001</span><span className="text-orange-400">2000tk → CACHE WRITE</span></div>
-                <div className="flex justify-between"><span className="text-[#444]">call_002</span><span className="glow-text">2000tk → 90% OFF ✓</span></div>
-                <div className="flex justify-between"><span className="text-[#444]">call_003</span><span className="glow-text">2000tk → 90% OFF ✓</span></div>
-                <div className="pt-3 mt-3 border-t border-[rgba(0,255,170,0.1)]">
-                  <div className="flex justify-between"><span className="text-[#444]">monthly_cost</span><span className="glow-text font-bold text-lg">$40</span></div>
+            <div className="pl-0 md:pl-8" style={{ borderLeft: "none" }}>
+              <div className="kicker mb-4">WITH CACHELLM</div>
+              <div className="code-block" style={{ fontSize: 13 }}>
+                <div><span className="cmt">call_1:</span> system_prompt (2000tk) → <span style={{ color: "#6f42c1" }}>CACHE WRITE</span></div>
+                <div><span className="cmt">call_2:</span> system_prompt (2000tk) → <span style={{ color: "#032f62", fontWeight: 700 }}>90% OFF ✓</span></div>
+                <div><span className="cmt">call_3:</span> system_prompt (2000tk) → <span style={{ color: "#032f62", fontWeight: 700 }}>90% OFF ✓</span></div>
+                <div style={{ borderTop: "1px solid #e2e8f0", marginTop: 12, paddingTop: 12 }}>
+                  monthly_bill: <span style={{ fontSize: 20, fontWeight: 700 }}>$40</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ═══════ TERMINAL DEMO ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## LIVE_TERMINAL</div>
-          <TerminalDemo />
+        {/* ═══════ LIVE TERMINAL ═══════ */}
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">LIVE DEMO</div>
+          <Terminal />
         </section>
 
         {/* ═══════ HOW IT WORKS ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## OPERATION_SEQUENCE</div>
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">HOW IT WORKS</div>
 
-          <div className="space-y-0">
-            {[
-              { num: "01", title: "ANALYZE", desc: "scans prompt structure — identifies system instructions, tool schemas, static documents" },
-              { num: "02", title: "SCORE", desc: "rates each segment by stability — tracks content hashes across requests to detect patterns" },
-              { num: "03", title: "INJECT", desc: "places cache_control breakpoints at optimal positions — up to 4 per request on anthropic" },
-              { num: "04", title: "TRACK", desc: "monitors cache hit rates, token counts, and calculates real dollar savings per request" },
-            ].map((step, i) => (
-              <div key={i} className="hud-panel p-4 flex items-start gap-5">
-                <span className="glow-text font-bold text-lg w-8 shrink-0">{step.num}</span>
-                <div>
-                  <span className="text-white font-bold text-[13px]">{step.title}</span>
-                  <span className="text-[#444] ml-3 text-[12px]">{step.desc}</span>
-                </div>
+          {[
+            { n: "01", title: "ANALYZE", desc: "Scans your prompt structure — identifies system instructions, tool schemas, static documents." },
+            { n: "02", title: "SCORE", desc: "Rates each segment by stability. Tracks content hashes across requests to detect what actually repeats." },
+            { n: "03", title: "INJECT", desc: "Places cache_control breakpoints at optimal positions. Up to 4 per request on Anthropic." },
+            { n: "04", title: "TRACK", desc: "Monitors cache hit rates, token counts, and calculates real dollar savings per request." },
+          ].map((step, i) => (
+            <div key={i} className="flex gap-6 py-5" style={{ borderBottom: i < 3 ? "1px solid #e2e8f0" : "none" }}>
+              <span className="display" style={{ fontSize: 32, color: "#000", minWidth: 48 }}>{step.n}</span>
+              <div>
+                <div className="kicker mb-1">{step.title}</div>
+                <p style={{ color: "#757575", fontSize: 15, lineHeight: 1.5 }}>{step.desc}</p>
               </div>
-            ))}
+            </div>
+          ))}
+        </section>
+
+        {/* ═══════ QUICK START ═══════ */}
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">QUICK START</div>
+
+          <div className="code-block" style={{ border: "2px solid #000" }}>
+            <div className="cmt">// one line change to existing code</div>
+            <div><span className="kw">import</span> Anthropic <span className="kw">from</span> <span className="str">&apos;@anthropic-ai/sdk&apos;</span></div>
+            <div><span className="kw">import</span> {"{ optimizeAnthropic }"} <span className="kw">from</span> <span className="str">&apos;cachellm&apos;</span></div>
+            <div style={{ marginTop: 16 }}><span className="cmt">// wrap once — everything else stays the same</span></div>
+            <div><span className="kw">const</span> client = <span className="fn">optimizeAnthropic</span>(<span className="kw">new</span> <span className="fn">Anthropic</span>())</div>
+            <div style={{ marginTop: 16 }}><span className="kw">const</span> res = <span className="kw">await</span> client.messages.<span className="fn">create</span>({"{"})</div>
+            <div style={{ paddingLeft: 24 }}>model: <span className="str">&apos;claude-sonnet-4-20250514&apos;</span>,</div>
+            <div style={{ paddingLeft: 24 }}>system: <span className="str">&apos;You are a helpful assistant...&apos;</span>,</div>
+            <div style={{ paddingLeft: 24 }}>messages: [{"{ role: 'user', content: 'Hello' }"}],</div>
+            <div>{"}"}</div>
+            <div style={{ marginTop: 16 }}>client.<span className="fn">printStats</span>() <span className="cmt">// see your savings</span></div>
           </div>
         </section>
 
-        {/* ═══════ COST CHART ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## COST_PROJECTION</div>
+        {/* ═══════ COST PROJECTION ═══════ */}
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">COST PROJECTION</div>
 
-          <div className="hud-panel p-6">
-            {[
-              { label: "100 req/day", before: 9, after: 1.35, pct: 85 },
-              { label: "500 req/day", before: 45, after: 6.75, pct: 85 },
-              { label: "1K req/day", before: 90, after: 13.5, pct: 85 },
-              { label: "10K req/day", before: 900, after: 135, pct: 85 },
-            ].map((tier, i) => (
-              <div key={i} className="flex items-center gap-4 mb-4 last:mb-0">
-                <span className="text-[#444] text-[11px] w-[90px] shrink-0 text-right">{tier.label}</span>
-                <div className="flex-1 h-6 bg-[rgba(0,255,170,0.03)] border border-[rgba(0,255,170,0.06)] relative overflow-hidden">
-                  <div
-                    className="absolute inset-y-0 left-0 bg-[rgba(0,255,170,0.15)] border-r border-[rgba(0,255,170,0.4)]"
-                    style={{ width: `${tier.pct}%`, transition: "width 1.5s ease-out", transitionDelay: `${i * 200}ms` }}
-                  />
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-2">
-                    <span className="text-[10px] text-[rgba(0,255,170,0.6)]">${tier.before} → <span className="glow-text font-bold">${tier.after}</span></span>
-                  </div>
-                </div>
-                <span className="text-[#444] text-[10px] w-[70px]">save ${(tier.before - tier.after).toFixed(0)}/day</span>
-              </div>
-            ))}
-            <div className="text-[9px] text-[#222] mt-4">* claude sonnet / 3K token system prompt / 90% hit rate</div>
-          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid #000" }}>
+                <td className="kicker-light py-3">SCALE</td>
+                <td className="kicker-light py-3 text-right">BEFORE</td>
+                <td className="kicker-light py-3 text-right">AFTER</td>
+                <td className="kicker-light py-3 text-right">SAVED</td>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { scale: "100 req/day", before: "$9", after: "$1.35", saved: "$7.65/day" },
+                { scale: "500 req/day", before: "$45", after: "$6.75", saved: "$38/day" },
+                { scale: "1,000 req/day", before: "$90", after: "$13.50", saved: "$76/day" },
+                { scale: "10,000 req/day", before: "$900", after: "$135", saved: "$765/day" },
+              ].map((row, i) => (
+                <tr key={i} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                  <td className="py-4" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>{row.scale}</td>
+                  <td className="py-4 text-right" style={{ color: "#757575", textDecoration: "line-through" }}>{row.before}</td>
+                  <td className="py-4 text-right" style={{ fontWeight: 700 }}>{row.after}</td>
+                  <td className="py-4 text-right" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#757575" }}>{row.saved}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="kicker-light mt-4" style={{ fontSize: 10 }}>
+            * CLAUDE SONNET / 3K TOKEN SYSTEM PROMPT / 90% HIT RATE
+          </p>
         </section>
 
         {/* ═══════ PROVIDERS ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## SUPPORTED_TARGETS</div>
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">SUPPORTED PROVIDERS</div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
             {[
-              { name: "ANTHROPIC", status: "ONLINE", savings: "90%", method: "cache_control injection", ttl: "5min / 1hr" },
-              { name: "OPENAI", status: "ONLINE", savings: "50%", method: "prefix reordering", ttl: "5-10min" },
-              { name: "GEMINI", status: "PENDING", savings: "90%", method: "cache object mgmt", ttl: "configurable" },
+              { name: "ANTHROPIC", status: "LIVE", savings: "90%", method: "cache_control injection", ttl: "5min / 1hr" },
+              { name: "OPENAI", status: "LIVE", savings: "50%", method: "prefix reordering", ttl: "5–10min" },
+              { name: "GEMINI", status: "LIVE", savings: "90%", method: "cache object mgmt", ttl: "configurable" },
             ].map((p, i) => (
-              <div key={i} className="hud-panel p-5 corner-brackets">
+              <div
+                key={i}
+                className="py-6 pr-6"
+                style={{
+                  borderRight: i < 2 ? "1px solid #e2e8f0" : "none",
+                  paddingLeft: i > 0 ? 24 : 0,
+                }}
+              >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-white font-bold text-[13px]">{p.name}</span>
-                  <span className={`text-[9px] tracking-widest ${p.status === "ONLINE" ? "glow-text" : "text-[#555]"}`}>
-                    {p.status === "ONLINE" && "● "}{p.status}
+                  <span className="kicker">{p.name}</span>
+                  <span className="kicker" style={{ fontSize: 10, color: p.status === "LIVE" ? "#000" : "#999" }}>
+                    ● {p.status}
                   </span>
                 </div>
-                <div className="space-y-2 text-[11px]">
-                  <div className="flex justify-between"><span className="text-[#333]">savings</span><span className="glow-text">{p.savings}</span></div>
-                  <div className="flex justify-between"><span className="text-[#333]">method</span><span className="text-[#666]">{p.method}</span></div>
-                  <div className="flex justify-between"><span className="text-[#333]">ttl</span><span className="text-[#666]">{p.ttl}</span></div>
+                <div className="space-y-2" style={{ fontSize: 14 }}>
+                  <div className="flex justify-between"><span className="kicker-light">SAVINGS</span><span style={{ fontWeight: 600 }}>{p.savings}</span></div>
+                  <div className="flex justify-between"><span className="kicker-light">METHOD</span><span style={{ color: "#757575" }}>{p.method}</span></div>
+                  <div className="flex justify-between"><span className="kicker-light">TTL</span><span style={{ color: "#757575" }}>{p.ttl}</span></div>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ═══════ QUICK START CODE ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## INITIALIZATION_SEQUENCE</div>
+        {/* ═══════ ARCHITECTURE ═══════ */}
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">ARCHITECTURE</div>
 
-          <div className="hud-panel p-6 text-[12px] leading-relaxed">
-            <div className="text-[#333]">// one line change to existing code</div>
-            <div className="mt-2"><span className="text-orange-400">import</span> Anthropic <span className="text-orange-400">from</span> <span className="glow-text">{`'@anthropic-ai/sdk'`}</span></div>
-            <div><span className="text-orange-400">import</span> {"{ optimizeAnthropic }"} <span className="text-orange-400">from</span> <span className="glow-text">{`'cachellm'`}</span></div>
-            <div className="mt-3"><span className="text-[#333]">// wrap once — everything else stays the same</span></div>
-            <div><span className="text-orange-400">const</span> client = <span className="text-yellow-300">optimizeAnthropic</span>(<span className="text-orange-400">new</span> <span className="text-yellow-300">Anthropic</span>())</div>
-            <div className="mt-3"><span className="text-orange-400">const</span> res = <span className="text-orange-400">await</span> client.messages.<span className="text-yellow-300">create</span>({`({`}</div>
-            <div className="pl-4">model: <span className="glow-text">{`'claude-sonnet-4-20250514'`}</span>,</div>
-            <div className="pl-4">system: <span className="glow-text">{`'You are a helpful assistant...'`}</span>,</div>
-            <div className="pl-4">messages: [{`{ role: 'user', content: 'Hello' }`}],</div>
-            <div>{`})`}</div>
-            <div className="mt-3">client.<span className="text-yellow-300">printStats</span>() <span className="text-[#333]">// see your savings</span></div>
+          <div className="code-block" style={{ border: "2px solid #000", fontSize: 12, lineHeight: 1.8 }}>
+            <pre>{`  YOUR APP
+    │
+    │  const client = optimizeAnthropic(new Anthropic())
+    │
+    ▼
+  ┌─────────────────────────────────────────┐
+  │            cachellm                     │
+  │                                         │
+  │   ANALYZER      STRATEGY      STATS     │
+  │   scores        picks         tracks    │
+  │   segments      breakpoint    hits &    │
+  │   by stability  positions     savings   │
+  │        │             │           │      │
+  │        └─────────────┘           │      │
+  │              │                   │      │
+  │   ┌──────────▼────────────┐     │      │
+  │   │  PROVIDER ADAPTERS    │     │      │
+  │   │                       │     │      │
+  │   │  anthropic  openai    │     │      │
+  │   │  gemini               │     │      │
+  │   └──────┬────────┬───────┘     │      │
+  └──────────┼────────┼─────────────┼──────┘
+             │        │             │
+             ▼        ▼             ▼
+  ┌────────────┐ ┌────────┐ ┌───────────┐
+  │ Claude API │ │GPT API │ │ Terminal  │
+  │ 90% off    │ │50% off │ │ \$ saved  │
+  └────────────┘ └────────┘ └───────────┘`}</pre>
           </div>
         </section>
 
         {/* ═══════ DESIGN PRINCIPLES ═══════ */}
-        <section className="mb-24">
-          <div className="hud-label mb-4">## SYSTEM_SPECIFICATIONS</div>
+        <section className="py-12" style={{ borderBottom: "1px solid #e2e8f0" }}>
+          <div className="ribbon mb-8 inline-block">DESIGN PRINCIPLES</div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          {[
+            { key: "ZERO DEPENDENCIES", val: "No tiktoken (3MB), no Redis, no external services. Token estimation uses a fast heuristic." },
+            { key: "ZERO INFRASTRUCTURE", val: "Everything runs in-process. No proxy, no database, no config. npm install and done." },
+            { key: "ZERO CODE CHANGES", val: "JavaScript Proxy wraps your client. All methods, props, and TypeScript types pass through unchanged." },
+            { key: "UNDER 15KB GZIPPED", val: "Smaller than most favicons." },
+          ].map((p, i) => (
+            <div key={i} className="flex gap-8 py-5" style={{ borderBottom: i < 3 ? "1px solid #e2e8f0" : "none" }}>
+              <span className="kicker shrink-0" style={{ minWidth: 200 }}>{p.key}</span>
+              <span style={{ color: "#757575", fontSize: 15 }}>{p.val}</span>
+            </div>
+          ))}
+        </section>
+
+        {/* ═══════ ROADMAP ═══════ */}
+        <section className="py-12" style={{ borderBottom: "2px solid #000" }}>
+          <div className="ribbon mb-8 inline-block">ROADMAP</div>
+
+          <div className="space-y-3" style={{ fontSize: 15 }}>
             {[
-              { key: "DEPENDENCIES", val: "ZERO", desc: "no tiktoken, no redis, no external services" },
-              { key: "INFRASTRUCTURE", val: "ZERO", desc: "in-process only, no proxy or database" },
-              { key: "CODE_CHANGES", val: "ZERO", desc: "JS proxy, all types pass through unchanged" },
-              { key: "BUNDLE_SIZE", val: "<15KB", desc: "gzipped, smaller than most favicons" },
-            ].map((s, i) => (
-              <div key={i} className="hud-panel p-4">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="hud-label">{s.key}</span>
-                  <span className="glow-text font-bold">{s.val}</span>
-                </div>
-                <span className="text-[#333] text-[11px]">{s.desc}</span>
+              { done: true, text: "Anthropic adapter (auto cache_control injection)" },
+              { done: true, text: "OpenAI adapter (prefix optimization)" },
+              { done: true, text: "Gemini adapter (cache object management)" },
+              { done: true, text: "Streaming support" },
+              { done: true, text: "Stats tracking with cost estimation" },
+              { done: false, text: "Vercel AI SDK middleware" },
+              { done: false, text: "CLI tool for analyzing prompts" },
+              { done: false, text: "Python package (pip install cachellm)" },
+            ].map((item, i) => (
+              <div key={i} className="flex gap-3 items-baseline">
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: item.done ? "#000" : "#ccc" }}>
+                  {item.done ? "■" : "□"}
+                </span>
+                <span style={{ color: item.done ? "#1a1a1a" : "#999" }}>{item.text}</span>
               </div>
             ))}
           </div>
         </section>
-
-        {/* ═══════ FOOTER ═══════ */}
-        <footer className="border-t border-[rgba(0,255,170,0.08)] pt-10">
-          <div className="hud-label mb-6">────────────────────────────────────────────────────</div>
-
-          <div className="flex flex-wrap gap-12 text-[11px] mb-10">
-            <div>
-              <div className="hud-label mb-2">NAVIGATION</div>
-              <div className="space-y-1.5">
-                <div><a href="https://github.com/sahilempire/cachellm" target="_blank" className="text-[#444] hover:glow-text transition-colors">github ↗</a></div>
-                <div><a href="https://www.npmjs.com/package/cachellm" target="_blank" className="text-[#444] hover:glow-text transition-colors">npm ↗</a></div>
-                <div><a href="https://github.com/sahilempire/cachellm/issues" target="_blank" className="text-[#444] hover:glow-text transition-colors">issues ↗</a></div>
-              </div>
-            </div>
-            <div>
-              <div className="hud-label mb-2">RESOURCES</div>
-              <div className="space-y-1.5">
-                <div><a href="https://github.com/sahilempire/cachellm#quick-start" target="_blank" className="text-[#444] hover:glow-text transition-colors">documentation</a></div>
-                <div><a href="https://github.com/sahilempire/cachellm/tree/main/examples" target="_blank" className="text-[#444] hover:glow-text transition-colors">examples</a></div>
-                <div><a href="https://github.com/sahilempire/cachellm/blob/main/CONTRIBUTING.md" target="_blank" className="text-[#444] hover:glow-text transition-colors">contributing</a></div>
-              </div>
-            </div>
-            <div>
-              <div className="hud-label mb-2">AUTHOR</div>
-              <div className="space-y-1.5">
-                <div><a href="https://github.com/sahilempire" target="_blank" className="text-[#444] hover:glow-text transition-colors">@sahilempire</a></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-[#1a1a1a] text-[10px] pb-10">
-            ── MIT LICENSE ── v0.1.2 ── {new Date().getFullYear()} ──────────────────────────────────
-          </div>
-        </footer>
       </main>
+
+      {/* ═══════ FOOTER ═══════ */}
+      <footer style={{ background: "#1a1a1a", color: "#fff", marginTop: 0 }}>
+        <div className="max-w-[1200px] mx-auto px-6 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div>
+              <div className="kicker mb-4" style={{ color: "#fff" }}>CACHELLM</div>
+              <p style={{ color: "#757575", fontSize: 14, lineHeight: 1.6 }}>
+                Auto-optimize LLM prompt caching.
+                Zero dependencies. Zero config. MIT licensed.
+              </p>
+            </div>
+
+            <div>
+              <div className="kicker-light mb-4" style={{ color: "#757575" }}>LINKS</div>
+              <div className="space-y-2" style={{ fontSize: 14 }}>
+                <div><a href="https://github.com/sahilempire/cachellm" target="_blank" style={{ color: "#999", textDecoration: "none" }} className="hover:text-[#057dbc]">GitHub ↗</a></div>
+                <div><a href="https://www.npmjs.com/package/cachellm" target="_blank" style={{ color: "#999", textDecoration: "none" }} className="hover:text-[#057dbc]">npm ↗</a></div>
+                <div><a href="https://github.com/sahilempire/cachellm/issues" target="_blank" style={{ color: "#999", textDecoration: "none" }} className="hover:text-[#057dbc]">Issues ↗</a></div>
+              </div>
+            </div>
+
+            <div>
+              <div className="kicker-light mb-4" style={{ color: "#757575" }}>RESOURCES</div>
+              <div className="space-y-2" style={{ fontSize: 14 }}>
+                <div><a href="https://github.com/sahilempire/cachellm#quick-start" target="_blank" style={{ color: "#999", textDecoration: "none" }} className="hover:text-[#057dbc]">Documentation</a></div>
+                <div><a href="https://github.com/sahilempire/cachellm/tree/main/examples" target="_blank" style={{ color: "#999", textDecoration: "none" }} className="hover:text-[#057dbc]">Examples</a></div>
+                <div><a href="https://github.com/sahilempire/cachellm/blob/main/CONTRIBUTING.md" target="_blank" style={{ color: "#999", textDecoration: "none" }} className="hover:text-[#057dbc]">Contributing</a></div>
+              </div>
+            </div>
+
+            <div>
+              <div className="kicker-light mb-4" style={{ color: "#757575" }}>AUTHOR</div>
+              <div style={{ fontSize: 14 }}>
+                <a href="https://github.com/sahilempire" target="_blank" style={{ color: "#999", textDecoration: "none" }} className="hover:text-[#057dbc]">@sahilempire</a>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ borderTop: "1px solid #333", marginTop: 48, paddingTop: 16 }}>
+            <span className="kicker-light" style={{ color: "#333", fontSize: 10 }}>
+              MIT LICENSE — v0.2.0 — 2026
+            </span>
+          </div>
+        </div>
+      </footer>
     </>
   );
 }
