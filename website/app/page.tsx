@@ -423,27 +423,8 @@ export default function Home() {
           ))}
         </Section>
 
-        {/* ── ROADMAP ── */}
-        <section style={{ paddingTop: mobile ? 32 : 48, paddingBottom: mobile ? 32 : 48, borderBottom: "2px solid #000" }}>
-          <Ribbon>ROADMAP</Ribbon>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, ...sans, fontSize: mobile ? 14 : 15 }}>
-            {[
-              { done: true, text: "Anthropic adapter (auto cache_control injection)" },
-              { done: true, text: "OpenAI adapter (prefix optimization)" },
-              { done: true, text: "Gemini adapter (cache object management)" },
-              { done: true, text: "Streaming support" },
-              { done: true, text: "Stats tracking with cost estimation" },
-              { done: false, text: "Vercel AI SDK middleware" },
-              { done: false, text: "CLI tool for analyzing prompts" },
-              { done: false, text: "Python package (pip install cachellm)" },
-            ].map((item, i) => (
-              <div key={i} style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
-                <span style={{ ...mono, fontSize: 13, color: item.done ? "#000" : "#ccc" }}>{item.done ? "■" : "□"}</span>
-                <span style={{ color: item.done ? "#1a1a1a" : "#999" }}>{item.text}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* ── bottom rule before footer ── */}
+        <div style={{ borderBottom: "2px solid #000" }} />
       </main>
 
       {/* ── FOOTER (inverted) ── */}
