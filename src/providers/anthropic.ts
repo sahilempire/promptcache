@@ -8,6 +8,7 @@ import { ContentDiffer } from '../core/differ.js'
 type AnyAnthropic = {
   messages: {
     create: (params: Record<string, unknown>) => Promise<Record<string, unknown>>
+    stream?: (params: Record<string, unknown>) => unknown
   }
   [key: string]: unknown
 }
@@ -88,6 +89,89 @@ export function optimizeAnthropic<T extends AnyAnthropic>(
                 return response
               }
             }
+
+            // streaming support — wraps messages.stream() the same way
+            if (messagesProp === 'stream' && (messagesTarget as any).stream) {
+              return (params: Record<string, unknown>) => {
+                if (!opts.enabled) {
+                  return (messagesTarget as any).stream.call(messagesTarget, params)
+                }
+
+                const optimized = optimizeParams(params, analyzer, opts, log)
+                const stream = (messagesTarget as any).stream.call(messagesTarget, optimized)
+
+                // the anthropic SDK stream object has event listeners and
+                // a finalMessage() / finalUsage() that resolves when done.
+                // we hook into the final message to grab cache metrics.
+                if (stream && typeof stream === 'object') {
+                  const originalOn = stream.on?.bind(stream)
+                  if (originalOn) {
+                    stream.on = (event: string, callback: (...args: unknown[]) => void) => {
+                      if (event === 'finalMessage' || event === 'message') {
+                        return originalOn(event, (...args: unknown[]) => {
+                          // try to extract metrics from the final message
+                          const msg = args[0] as Record<string, unknown> | undefined
+                          if (msg?.usage && opts.trackStats) {
+                            tracker.record(extractMetrics(msg))
+                          }
+                          callback(...args)
+                        })
+                      }
+                      return originalOn(event, callback)
+                    }
+                  }
+
+                  // also handle the async iterator pattern
+                  // when people do `for await (const event of stream)`
+                  // the usage comes in the final `message_stop` or `message_delta` event
+                  const originalSymbol = stream[Symbol.asyncIterator]?.bind(stream)
+                  if (originalSymbol) {
+                    stream[Symbol.asyncIterator] = () => {
+                      const iterator = originalSymbol()
+                      return {
+                        async next() {
+                          const result = await iterator.next()
+                          if (!result.done && result.value) {
+                            const event = result.value as Record<string, unknown>
+                            // message_delta event carries final usage in anthropic streams
+                            if (event.type === 'message_delta' && opts.trackStats) {
+                              const usage = (event.usage || {}) as Record<string, number>
+                              if (usage.cache_creation_input_tokens !== undefined ||
+                                  usage.cache_read_input_tokens !== undefined) {
+                                tracker.record({
+                                  cacheCreationTokens: usage.cache_creation_input_tokens || 0,
+                                  cacheReadTokens: usage.cache_read_input_tokens || 0,
+                                  totalInputTokens: usage.input_tokens || 0,
+                                  outputTokens: usage.output_tokens || 0,
+                                  model: (params.model as string) || 'unknown',
+                                  provider: 'anthropic',
+                                })
+                              }
+                            }
+                          }
+                          return result
+                        },
+                      }
+                    }
+                  }
+
+                  // handle finalMessage() promise if it exists
+                  if (typeof stream.finalMessage === 'function') {
+                    const originalFinalMessage = stream.finalMessage.bind(stream)
+                    stream.finalMessage = async () => {
+                      const msg = await originalFinalMessage()
+                      if (msg?.usage && opts.trackStats) {
+                        tracker.record(extractMetrics(msg))
+                      }
+                      return msg
+                    }
+                  }
+                }
+
+                return stream
+              }
+            }
+
             return Reflect.get(messagesTarget, messagesProp)
           },
         })

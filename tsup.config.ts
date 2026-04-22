@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     'providers/anthropic': 'src/providers/anthropic.ts',
     'providers/openai': 'src/providers/openai.ts',
+    'providers/gemini': 'src/providers/gemini.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,
@@ -16,5 +17,6 @@ export default defineConfig({
   external: [
     '@anthropic-ai/sdk',
     'openai',
+    '@google/generative-ai',
   ],
 })

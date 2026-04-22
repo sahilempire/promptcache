@@ -36,6 +36,16 @@
         "types": "./dist/providers/openai.d.cts",
         "default": "./dist/providers/openai.cjs"
       }
+    },
+    "./gemini": {
+      "import": {
+        "types": "./dist/providers/gemini.d.ts",
+        "default": "./dist/providers/gemini.js"
+      },
+      "require": {
+        "types": "./dist/providers/gemini.d.cts",
+        "default": "./dist/providers/gemini.cjs"
+      }
     }
   },
   "files": [
@@ -62,6 +72,7 @@
     "gpt",
     "cost-optimization",
     "token-savings",
+    "gemini",
     "cache",
     "ai"
   ],
@@ -80,13 +91,17 @@
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": ">=0.30.0",
-    "openai": ">=4.60.0"
+    "openai": ">=4.60.0",
+    "@google/generative-ai": ">=0.21.0"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/sdk": {
       "optional": true
     },
     "openai": {
+      "optional": true
+    },
+    "@google/generative-ai": {
       "optional": true
     }
   },

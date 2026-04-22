@@ -21,6 +21,11 @@ export interface OpenAICacheOptions extends CacheOptions {
   reorderSystemMessages?: boolean
 }
 
+export interface GeminiCacheOptions extends CacheOptions {
+  cacheTtlSeconds?: number
+  maxCacheEntries?: number
+}
+
 export interface PromptSegment {
   path: string
   content: string
