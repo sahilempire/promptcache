@@ -1,15 +1,37 @@
 import type { CacheStats, CacheMetrics, RequestStat, ModelStats } from '../types.js'
 
-// pricing per million tokens (updated as of early 2026)
+// pricing per million tokens
+// sources: platform.claude.com/docs/en/about-claude/pricing
+//          openai.com/api/pricing
+//          ai.google.dev/pricing
 const PRICING: Record<string, { input: number; cachedInput: number; output: number }> = {
-  'claude-sonnet-4-20250514': { input: 3, cachedInput: 0.3, output: 15 },
-  'claude-opus-4-20250514': { input: 15, cachedInput: 1.5, output: 75 },
-  'claude-haiku-3-5-20241022': { input: 0.8, cachedInput: 0.08, output: 4 },
-  'gpt-4o': { input: 2.5, cachedInput: 1.25, output: 10 },
-  'gpt-4o-mini': { input: 0.15, cachedInput: 0.075, output: 0.6 },
-  'gpt-4.1': { input: 2, cachedInput: 0.5, output: 8 },
-  'gpt-4.1-mini': { input: 0.4, cachedInput: 0.1, output: 1.6 },
-  'gpt-4.1-nano': { input: 0.1, cachedInput: 0.025, output: 0.4 },
+  // anthropic — claude 4.x family
+  'claude-opus-4-20250514':       { input: 15,   cachedInput: 1.5,    output: 75 },
+  'claude-sonnet-4-20250514':     { input: 3,    cachedInput: 0.3,    output: 15 },
+  // anthropic — claude 4.5 family
+  'claude-opus-4-5-20260301':     { input: 15,   cachedInput: 1.5,    output: 75 },
+  'claude-sonnet-4-5-20250620':   { input: 3,    cachedInput: 0.3,    output: 15 },
+  // anthropic — claude 4.6 family
+  'claude-opus-4-6':              { input: 15,   cachedInput: 1.5,    output: 75 },
+  'claude-sonnet-4-6':            { input: 3,    cachedInput: 0.3,    output: 15 },
+  // anthropic — claude 3.x
+  'claude-haiku-3-5-20241022':    { input: 0.8,  cachedInput: 0.08,   output: 4 },
+  'claude-3-5-sonnet-20241022':   { input: 3,    cachedInput: 0.3,    output: 15 },
+  // openai — gpt-4.1 family
+  'gpt-4.1':                      { input: 2,    cachedInput: 0.5,    output: 8 },
+  'gpt-4.1-mini':                 { input: 0.4,  cachedInput: 0.1,    output: 1.6 },
+  'gpt-4.1-nano':                 { input: 0.1,  cachedInput: 0.025,  output: 0.4 },
+  // openai — gpt-4o family
+  'gpt-4o':                       { input: 2.5,  cachedInput: 1.25,   output: 10 },
+  'gpt-4o-mini':                  { input: 0.15, cachedInput: 0.075,  output: 0.6 },
+  // openai — o-series
+  'o3':                           { input: 10,   cachedInput: 2.5,    output: 40 },
+  'o3-mini':                      { input: 1.1,  cachedInput: 0.275,  output: 4.4 },
+  'o4-mini':                      { input: 1.1,  cachedInput: 0.275,  output: 4.4 },
+  // google — gemini
+  'gemini-2.5-pro':               { input: 1.25, cachedInput: 0.315,  output: 10 },
+  'gemini-2.5-flash':             { input: 0.15, cachedInput: 0.0375, output: 0.6 },
+  'gemini-2.0-flash':             { input: 0.1,  cachedInput: 0.025,  output: 0.4 },
 }
 
 const FALLBACK_PRICING = { input: 3, cachedInput: 0.3, output: 15 }
