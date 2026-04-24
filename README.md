@@ -44,7 +44,9 @@ pip install cachellm-py     # python
 
 ## Quick Start
 
-### Anthropic (Claude) — saves up to 90%
+### Node.js / TypeScript
+
+#### Anthropic (Claude) — saves up to 90%
 
 ```typescript
 import Anthropic from '@anthropic-ai/sdk'
@@ -77,7 +79,7 @@ client.printStats()
 └──────────────────────────────────────────────────┘
 ```
 
-### OpenAI (GPT) — saves up to 50%
+#### OpenAI (GPT) — saves up to 50%
 
 ```typescript
 import OpenAI from 'openai'
@@ -98,6 +100,8 @@ client.printStats()
 
 ### Python
 
+#### Anthropic (Claude)
+
 ```python
 from anthropic import Anthropic
 from cachellm import optimize_anthropic
@@ -114,97 +118,23 @@ response = client.messages.create(
 client.print_stats()
 ```
 
----
+#### OpenAI (GPT)
 
-## Architecture
+```python
+from openai import OpenAI
+from cachellm import optimize_openai
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Your Application                         │
-│                                                                 │
-│   const client = optimizeAnthropic(new Anthropic())             │
-│                         │                                       │
-└─────────────────────────┼───────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      cachellm (Proxy Layer)                     │
-│                                                                 │
-│  ┌─────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
-│  │  Analyzer    │  │  Strategy    │  │  Stats Tracker         │ │
-│  │             │  │              │  │                        │ │
-│  │ scores each │  │ picks where  │  │ tracks hits, misses,   │ │
-│  │ segment by  │  │ to place     │  │ tokens, and cost       │ │
-│  │ stability   │  │ breakpoints  │  │ savings per request    │ │
-│  └──────┬──────┘  └──────┬───────┘  └────────────┬───────────┘ │
-│         │                │                       │              │
-│         ▼                ▼                       │              │
-│  ┌─────────────────────────────────┐             │              │
-│  │  Provider Adapters              │             │              │
-│  │                                 │             │              │
-│  │  ┌───────────┐ ┌─────────────┐ │             │              │
-│  │  │ Anthropic │ │   OpenAI    │ │             │              │
-│  │  │           │ │             │ │             │              │
-│  │  │ injects   │ │ reorders    │ │             │              │
-│  │  │ cache_    │ │ messages    │ │             │              │
-│  │  │ control   │ │ for prefix  │ │             │              │
-│  │  │ breaks    │ │ matching    │ │             │              │
-│  │  └─────┬─────┘ └──────┬──────┘ │             │              │
-│  └────────┼──────────────┼────────┘             │              │
-│           │              │                       │              │
-└───────────┼──────────────┼───────────────────────┼──────────────┘
-            │              │                       │
-            ▼              ▼                       ▼
-┌─────────────────┐ ┌─────────────┐  ┌─────────────────────────┐
-│  Claude API     │ │  GPT API    │  │  Terminal / Dashboard    │
-│                 │ │             │  │                         │
-│  cache_control  │ │  automatic  │  │  ┌───────────────────┐  │
-│  breakpoints    │ │  prefix     │  │  │ Saved: $104/month │  │
-│  → 90% off      │ │  matching   │  │  │ Hit rate: 87.5%   │  │
-│  cached tokens  │ │  → 50% off  │  │  └───────────────────┘  │
-└─────────────────┘ └─────────────┘  └─────────────────────────┘
-```
+client = optimize_openai(OpenAI())
 
----
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant..."},
+        {"role": "user", "content": "Hello"},
+    ],
+)
 
-## How The Analysis Works
-
-```
-┌─────────────────────────── Your Prompt ───────────────────────────┐
-│                                                                   │
-│  ┌─ System Prompt ──────────────────────────────────────────────┐ │
-│  │  "You are a cooking expert who knows recipes from every      │ │
-│  │   cuisine. You provide step-by-step instructions with        │ │
-│  │   quantities, prep time, and cooking tips..."                │ │
-│  │                                                              │ │
-│  │  Stability: ████████████████████████████████████████ 0.95    │ │
-│  │  Tokens:    ~2,100                                          │ │
-│  │  Verdict:   ✅ CACHE THIS (saves ~$0.006/request)           │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                   │
-│  ┌─ Tool Definitions ──────────────────────────────────────────┐ │
-│  │  get_weather, search_restaurants, book_reservation          │ │
-│  │  (3 tools with full JSON schemas)                           │ │
-│  │                                                              │ │
-│  │  Stability: ████████████████████████████████████████ 0.95    │ │
-│  │  Tokens:    ~800                                            │ │
-│  │  Verdict:   ✅ CACHE THIS                                   │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                   │
-│  ┌─ Conversation History ──────────────────────────────────────┐ │
-│  │  User: "What's the weather in Paris?"                       │ │
-│  │  Assistant: "Currently 18°C and sunny..."                   │ │
-│  │  User: "Find me a good restaurant nearby"                   │ │
-│  │                                                              │ │
-│  │  Older turns:                                                │ │
-│  │  Stability: ██████████████████████░░░░░░░░░░░░░░░░░ 0.70    │ │
-│  │  Last turn:                                                  │ │
-│  │  Stability: ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0.10    │ │
-│  │  Verdict:   ⏭️  SKIP (changes every request)                │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                   │
-│  Estimated savings: 84% on input tokens                          │
-└───────────────────────────────────────────────────────────────────┘
+client.print_stats()
 ```
 
 ---
@@ -254,56 +184,42 @@ Monthly bill: $40
 
 ---
 
-## Provider Support
+## How It Works
 
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                          Supported Providers                             │
-│                                                                          │
-│  ┌─ Anthropic (Claude) ──────┐  ┌─ OpenAI (GPT) ──────────────────┐    │
-│  │                           │  │                                  │    │
-│  │  Method:  Manual          │  │  Method:  Automatic              │    │
-│  │           breakpoints     │  │           prefix matching        │    │
-│  │                           │  │                                  │    │
-│  │  Savings: up to 90%       │  │  Savings: up to 50%             │    │
-│  │  Min tokens: 1,024        │  │  Min tokens: 1,024              │    │
-│  │  TTL: 5 min / 1 hour      │  │  TTL: 5-10 min                  │    │
-│  │                           │  │                                  │    │
-│  │  cachellm injects         │  │  cachellm reorders              │    │
-│  │  cache_control            │  │  messages for better             │    │
-│  │  breakpoints at           │  │  prefix matching                 │    │
-│  │  optimal positions        │  │                                  │    │
-│  └───────────────────────────┘  └──────────────────────────────────┘    │
-│                                                                          │
-│  ┌─ Gemini (coming soon) ────┐                                          │
-│  │                           │  Track progress: github.com/             │
-│  │  Method:  Explicit cache  │  sahilempire/cachellm/issues/1           │
-│  │           objects via API │                                          │
-│  │  Savings: up to 90%       │                                          │
-│  │  Min tokens: 32,768       │                                          │
-│  └───────────────────────────┘                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-```
+1. **Analyze** — scans your prompt structure, identifies system instructions, tool schemas, and conversation history
+2. **Score** — rates each segment by stability using content hashing and positional heuristics
+3. **Inject** — places `cache_control` breakpoints at optimal positions (Anthropic) or reorders messages for prefix matching (OpenAI)
+4. **Track** — monitors cache hit rates, token counts, and calculates real dollar savings
 
 ---
 
-## Cost Savings Breakdown
+## Provider Support
 
-```
-                     Without cachellm          With cachellm
-                     ─────────────────         ───────────────
-  100 requests/day   │██████████████│ $9.00    │██│ $1.35          ← save $7.65/day
-  500 requests/day   │██████████████│ $45.00   │██│ $6.75          ← save $38.25/day
-  1K  requests/day   │██████████████│ $90.00   │██│ $13.50         ← save $76.50/day
-  10K requests/day   │██████████████│ $900     │██│ $135           ← save $765/day
+| Provider | Method | Savings | Min Tokens | TTL |
+|:---------|:-------|:--------|:-----------|:----|
+| **Anthropic** (Claude) | `cache_control` injection | up to 90% | 1,024 | 5min / 1hr |
+| **OpenAI** (GPT) | Prefix reordering | up to 50% | 1,024 | 5-10min |
+| **Gemini** | Cache object management | up to 90% | 32,768 | Configurable |
 
-  * Based on 3K token system prompt, Claude Sonnet, 90% cache hit rate
-  * Actual savings depend on your prompt structure and call patterns
-```
+---
+
+## Cost Savings
+
+| Scale | Without | With cachellm | Saved/day |
+|:------|:--------|:--------------|:----------|
+| 100 req/day | $9.00 | $1.35 | $7.65 |
+| 500 req/day | $45.00 | $6.75 | $38.25 |
+| 1,000 req/day | $90.00 | $13.50 | $76.50 |
+| 10,000 req/day | $900 | $135 | $765 |
+
+*Based on 3K token system prompt, Claude Sonnet, 90% cache hit rate*
 
 ---
 
 ## Configuration
+
+<details>
+<summary><b>TypeScript</b></summary>
 
 ```typescript
 const client = optimizeAnthropic(new Anthropic(), {
@@ -317,6 +233,26 @@ const client = optimizeAnthropic(new Anthropic(), {
   },
 })
 ```
+
+</details>
+
+<details>
+<summary><b>Python</b></summary>
+
+```python
+from cachellm import optimize_anthropic
+from cachellm.types import AnthropicCacheOptions
+
+client = optimize_anthropic(Anthropic(), AnthropicCacheOptions(
+    strategy="auto",
+    max_breakpoints=4,
+    ttl="5m",
+    min_tokens=1024,
+    debug=False,
+))
+```
+
+</details>
 
 | Option | Default | What it does |
 |:-------|:--------|:-------------|
@@ -355,6 +291,9 @@ client.resetStats()
 
 Don't want the wrapper? Just analyze your prompts to see what's cacheable:
 
+<details>
+<summary><b>TypeScript</b></summary>
+
 ```typescript
 import { PromptAnalyzer } from 'cachellm'
 
@@ -371,63 +310,76 @@ console.log(analysis.variableSegments)        // what changes each request
 console.log(analysis.cacheableTokens)         // total tokens worth caching
 ```
 
+</details>
+
+<details>
+<summary><b>Python</b></summary>
+
+```python
+from cachellm import PromptAnalyzer
+
+analyzer = PromptAnalyzer()
+analysis = analyzer.analyze_anthropic_params({
+    "system": "Your long system prompt here...",
+    "tools": [{"name": "search", "description": "Search the web", "input_schema": {"type": "object"}}],
+    "messages": [{"role": "user", "content": "Hello"}],
+})
+
+print(analysis.estimated_savings_percent)  # 74
+print(analysis.stable_segments)            # what should be cached
+print(analysis.variable_segments)          # what changes each request
+print(analysis.cacheable_tokens)           # total tokens worth caching
+```
+
+</details>
+
 ---
 
 ## Project Structure
 
 ```
 cachellm/
-├── src/
-│   ├── index.ts                 ← public API (re-exports everything)
-│   ├── types.ts                 ← TypeScript interfaces
-│   │
+├── src/                             ← TypeScript source (npm package)
+│   ├── index.ts                     ← public API
+│   ├── types.ts                     ← TypeScript interfaces
 │   ├── core/
-│   │   ├── analyzer.ts          ← scores prompt segments for cacheability
-│   │   ├── hasher.ts            ← content fingerprinting (djb2)
-│   │   ├── differ.ts            ← tracks stability across requests
-│   │   ├── strategy.ts          ← breakpoint placement algorithm
-│   │   └── token-estimator.ts   ← fast token counting (no tiktoken)
-│   │
+│   │   ├── analyzer.ts              ← scores prompt segments for cacheability
+│   │   ├── hasher.ts                ← content fingerprinting (djb2)
+│   │   ├── differ.ts                ← tracks stability across requests
+│   │   ├── strategy.ts              ← breakpoint placement algorithm
+│   │   └── token-estimator.ts       ← fast token counting (no tiktoken)
 │   ├── providers/
-│   │   ├── anthropic.ts         ← injects cache_control via Proxy
-│   │   └── openai.ts            ← reorders for prefix matching
-│   │
+│   │   ├── anthropic.ts             ← injects cache_control via Proxy
+│   │   ├── openai.ts                ← reorders for prefix matching
+│   │   └── gemini.ts                ← cache object lifecycle management
 │   ├── stats/
-│   │   └── tracker.ts           ← records hits, calculates savings
-│   │
+│   │   └── tracker.ts               ← records hits, calculates savings
 │   └── utils/
-│       ├── lru.ts               ← zero-dep LRU cache (~60 lines)
-│       └── logger.ts            ← debug logging
+│       ├── lru.ts                   ← zero-dep LRU cache
+│       └── logger.ts               ← debug logging
 │
-├── tests/                       ← 35 tests, all passing
-├── examples/                    ← ready-to-run usage examples
-└── .github/workflows/           ← CI + automated npm releases
+├── python/                          ← Python source (PyPI package)
+│   ├── cachellm/
+│   │   ├── core/                    ← same analysis engine, ported to Python
+│   │   ├── providers/               ← Anthropic, OpenAI, Gemini adapters
+│   │   ├── stats/                   ← usage tracking
+│   │   └── utils/                   ← LRU cache, logger
+│   └── tests/                       ← 44 tests, all passing
+│
+├── tests/                           ← TypeScript tests (62 tests)
+├── examples/                        ← ready-to-run usage examples
+├── website/                         ← Next.js landing page
+└── .github/workflows/               ← CI + automated npm/PyPI releases
 ```
 
 ---
 
 ## Design Principles
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                                                                  │
-│  Zero dependencies          No tiktoken (3MB), no Redis,         │
-│  ────────────────           no external services. Token          │
-│                             estimation uses a fast heuristic.    │
-│                                                                  │
-│  Zero infrastructure        Everything runs in-process.          │
-│  ────────────────────       No proxy, no database, no config.    │
-│                             npm install and you're done.         │
-│                                                                  │
-│  Zero code changes          JavaScript Proxy wraps your client.  │
-│  ────────────────           All methods, props, and TS types     │
-│                             pass through unchanged.              │
-│                                                                  │
-│  < 15KB gzipped             Smaller than most icons on           │
-│  ──────────────             your page.                           │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
-```
+- **Zero dependencies** — no tiktoken (3MB), no Redis, no external services. Token estimation uses a fast heuristic.
+- **Zero infrastructure** — everything runs in-process. No proxy, no database, no config. Install and you're done.
+- **Zero code changes** — wraps your existing client. All methods, props, and types pass through unchanged.
+- **< 15KB gzipped** — smaller than most favicons.
 
 ---
 
@@ -439,20 +391,6 @@ Check the [`examples/`](./examples) directory:
 - [`openai-basic.ts`](./examples/openai-basic.ts) — GPT code review scenario
 - [`with-tools.ts`](./examples/with-tools.ts) — caching tool definitions (travel assistant with 4 tools)
 - [`analyze-prompt.ts`](./examples/analyze-prompt.ts) — standalone prompt analysis without wrapping
-
----
-
-## Roadmap
-
-- [x] Anthropic adapter (auto `cache_control` injection)
-- [x] OpenAI adapter (prefix optimization)
-- [x] Stats tracking with cost estimation
-- [x] Standalone prompt analysis
-- [ ] Gemini adapter ([#1](https://github.com/sahilempire/cachellm/issues/1))
-- [ ] Streaming support ([#2](https://github.com/sahilempire/cachellm/issues/2))
-- [ ] Vercel AI SDK middleware ([#4](https://github.com/sahilempire/cachellm/issues/4))
-- [ ] CLI tool for analyzing prompts in your codebase
-- [ ] Python package (`pip install cachellm`)
 
 ---
 
