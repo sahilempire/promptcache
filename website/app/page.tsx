@@ -286,7 +286,7 @@ export default function Home() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer style={{ padding: `0 ${px}px`, borderTop: `2px solid ${ink}` }}>
+      <footer style={{ padding: `0 ${px}px` }}>
         <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${mobile ? 40 : 56}px 0` }}>
           <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "3fr 2fr 2fr 2fr", gap: mobile ? 28 : 48, alignItems: "start" }}>
             <div>
