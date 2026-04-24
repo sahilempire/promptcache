@@ -26,3 +26,23 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  test-python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install and test
+        working-directory: python
+        run: |
+          pip install -e ".[dev]"
+          pytest tests/ -v
