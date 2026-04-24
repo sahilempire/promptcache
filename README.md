@@ -1,16 +1,32 @@
 <p align="center">
   <h1 align="center">cachellm</h1>
-  <p align="center">
-    Auto-optimize LLM prompt caching. One line of code, 60-90% savings on your API bill.
-  </p>
+</p>
+
+```diff
+- const client = new Anthropic()
++ const client = optimizeAnthropic(new Anthropic())
+
+  // that's it. your API bill just dropped 60-90%.
+```
+
+<p align="center">
+  <b>Intercepts LLM API calls at the SDK layer. Analyzes prompt stability with content hashing.<br>Injects <code>cache_control</code> breakpoints. Tracks hit rates and cost savings. Zero dependencies.</b>
+</p>
+
+<p align="center">
+  <code>npm install cachellm</code>&nbsp;&nbsp;·&nbsp;&nbsp;<code>pip install cachellm-py</code>
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat-square&color=cb3837" alt="npm"></a>
   <a href="https://pypi.org/project/cachellm-py/"><img src="https://img.shields.io/pypi/v/cachellm-py?style=flat-square&color=3775A9" alt="PyPI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/npm/l/cachellm?style=flat-square&color=blue" alt="license"></a>
-  <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat-square&label=tests" alt="CI"></a>
+  <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat-square&label=106%20tests" alt="CI"></a>
   <a href="https://github.com/sahilempire/cachellm"><img src="https://img.shields.io/github/stars/sahilempire/cachellm?style=flat-square" alt="stars"></a>
+</p>
+
+<p align="center">
+  <sub>Claude &nbsp;·&nbsp; GPT &nbsp;·&nbsp; Gemini &nbsp;&nbsp;|&nbsp;&nbsp; TypeScript &nbsp;·&nbsp; Python &nbsp;&nbsp;|&nbsp;&nbsp; &lt;15KB gzipped &nbsp;&nbsp;|&nbsp;&nbsp; 0 deps</sub>
 </p>
 
 ---
