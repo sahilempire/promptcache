@@ -77,9 +77,7 @@ export default function Home() {
       <div style={{ borderTop: `3px solid ${ink}` }} />
       <nav style={{ padding: `0 ${px}px`, borderBottom: `1px solid ${hairline}` }}>
         <div style={{ maxWidth: maxW, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 48 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <span style={{ ...mono, fontSize: 13, fontWeight: 700, letterSpacing: "1px" }}>CACHELLM</span>
-          </div>
+          <span style={{ ...mono, fontSize: 13, fontWeight: 700, letterSpacing: "1px" }}>CACHELLM</span>
           <div style={{ display: "flex", alignItems: "center", gap: mobile ? 16 : 28 }}>
             {[
               { label: "GITHUB", href: "https://github.com/sahilempire/cachellm" },
@@ -134,7 +132,7 @@ export default function Home() {
               { label: "DEPENDENCIES", val: 0, suf: "", static: true },
               { label: "GZIPPED", val: 15, suf: "KB" },
             ].map((s, i) => (
-              <div key={i} style={{ paddingLeft: !mobile && i > 0 ? 28 : 0, borderLeft: !mobile && i > 0 ? `1px solid ${hairline}` : "none" }}>
+              <div key={i} style={{ paddingLeft: !mobile && i > 0 ? 28 : 0, paddingRight: !mobile && i < 3 ? 28 : 0, borderLeft: !mobile && i > 0 ? `1px solid ${hairline}` : "none" }}>
                 <div style={{ ...mono, fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", color: gray, marginBottom: 8 }}>{s.label}</div>
                 <div style={{ ...serif, fontSize: mobile ? 38 : 48, fontWeight: 400, lineHeight: 1, color: ink }}>
                   {s.static ? "0" : <Counter end={s.val} delay={300 + i * 120} suffix={s.suf} />}
@@ -214,7 +212,9 @@ export default function Home() {
               { name: "Google", sub: "Gemini", savings: "90%", method: "CachedContent API", ttl: "Configurable" },
             ].map((p, i) => (
               <div key={i} style={{
-                padding: mobile ? "24px 0" : 28,
+                padding: mobile ? "24px 0" : "28px 32px",
+                paddingLeft: !mobile && i === 0 ? 0 : undefined,
+                paddingRight: !mobile && i === 2 ? 0 : undefined,
                 borderLeft: !mobile && i > 0 ? `2px solid ${ink}` : "none",
                 borderBottom: mobile && i < 2 ? `1px solid ${hairline}` : "none",
               }}>
@@ -288,7 +288,7 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <footer style={{ padding: `0 ${px}px` }}>
         <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${mobile ? 40 : 56}px 0` }}>
-          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "3fr 2fr 2fr 2fr", gap: mobile ? 28 : 48, alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1.5fr 1fr 1fr 1fr", gap: mobile ? 28 : 40, alignItems: "start" }}>
             <div>
               <div style={{ ...mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", marginBottom: 12 }}>CACHELLM</div>
               <p style={{ ...sans, color: gray, fontSize: 13, lineHeight: 1.7 }}>
