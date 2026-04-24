@@ -1,21 +1,43 @@
+<h1 align="center">cachellm</h1>
+
 <p align="center">
-  <h1 align="center">cachellm</h1>
+  <b>Stop overpaying for LLM intelligence you already bought.</b>
 </p>
+
+<br>
+
+<table align="center">
+<tr>
+<td>
+
+```
+  Your LLM bill today          With cachellm
+                                
+  ████████████████ $900/mo      ██ $135/mo
+                                
+  You're resending the same     One line. Same SDK.
+  system prompt 10,000 times    90% of those tokens
+  a day — paying full price     are now cached.
+  every time.                   
+```
+
+</td>
+</tr>
+</table>
+
+<br>
 
 ```diff
 - const client = new Anthropic()
 + const client = optimizeAnthropic(new Anthropic())
-
-  // that's it. your API bill just dropped 60-90%.
 ```
 
 <p align="center">
-  <b>Intercepts LLM API calls at the SDK layer. Analyzes prompt stability with content hashing.<br>Injects <code>cache_control</code> breakpoints. Tracks hit rates and cost savings. Zero dependencies.</b>
+  That's the entire integration. Your code doesn't change. Your types don't change.<br>
+  Your API bill drops 60-90%.
 </p>
 
-<p align="center">
-  <code>npm install cachellm</code>&nbsp;&nbsp;·&nbsp;&nbsp;<code>pip install cachellm-py</code>
-</p>
+<br>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat-square&color=cb3837" alt="npm"></a>
@@ -26,8 +48,57 @@
 </p>
 
 <p align="center">
-  <sub>Claude &nbsp;·&nbsp; GPT &nbsp;·&nbsp; Gemini &nbsp;&nbsp;|&nbsp;&nbsp; TypeScript &nbsp;·&nbsp; Python &nbsp;&nbsp;|&nbsp;&nbsp; &lt;15KB gzipped &nbsp;&nbsp;|&nbsp;&nbsp; 0 deps</sub>
+  <code>npm install cachellm</code>&nbsp;&nbsp;·&nbsp;&nbsp;<code>pip install cachellm-py</code>
 </p>
+
+<p align="center">
+  <sub>Claude &nbsp;·&nbsp; GPT &nbsp;·&nbsp; Gemini &nbsp;&nbsp;|&nbsp;&nbsp; TypeScript &nbsp;·&nbsp; Python &nbsp;&nbsp;|&nbsp;&nbsp; &lt;15KB gzipped &nbsp;&nbsp;|&nbsp;&nbsp; 0 deps &nbsp;&nbsp;|&nbsp;&nbsp; 106 tests</sub>
+</p>
+
+<br>
+
+<details>
+<summary><b>What happens under the hood</b> (click to expand)</summary>
+<br>
+
+```
+   request arrives
+        │
+        ▼
+   ┌─ ANALYZER ─────────────────────────────┐
+   │                                         │
+   │  djb2 hash each content block           │
+   │  compare against last N requests        │
+   │  score stability: 0.0 → 1.0            │
+   │                                         │
+   │  system prompt    → 0.95 (always same)  │
+   │  tool definitions → 0.95 (always same)  │
+   │  older messages   → 0.70 (mostly same)  │
+   │  latest message   → 0.10 (always new)   │
+   └─────────────┬───────────────────────────┘
+                 │
+                 ▼
+   ┌─ STRATEGY ──────────────────────────────┐
+   │                                         │
+   │  sort by (stability × token_count)      │
+   │  pick top N segments (max 4)            │
+   │  skip anything below min_tokens         │
+   └─────────────┬───────────────────────────┘
+                 │
+                 ▼
+   ┌─ PROVIDER ADAPTER ─────────────────────┐
+   │                                         │
+   │  Anthropic: inject cache_control        │
+   │  OpenAI:    reorder prefix              │
+   │  Gemini:    manage CachedContent API    │
+   └─────────────┬───────────────────────────┘
+                 │
+                 ▼
+        API call fires
+   response.usage → stats tracker
+```
+
+</details>
 
 ---
 
