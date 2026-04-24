@@ -286,13 +286,13 @@ export default function Home() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer style={{ padding: `0 ${px}px` }}>
+      <footer style={{ padding: `0 ${px}px`, borderTop: `2px solid ${ink}` }}>
         <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${mobile ? 40 : 56}px 0` }}>
-          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "2fr 1fr 1fr 1fr", gap: mobile ? 28 : 40 }}>
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "3fr 2fr 2fr 2fr", gap: mobile ? 28 : 48, alignItems: "start" }}>
             <div>
               <div style={{ ...mono, fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", marginBottom: 12 }}>CACHELLM</div>
-              <p style={{ ...sans, color: gray, fontSize: 13, lineHeight: 1.7, maxWidth: 260 }}>
-                Auto-optimize LLM prompt caching. Zero dependencies. MIT licensed.
+              <p style={{ ...sans, color: gray, fontSize: 13, lineHeight: 1.7 }}>
+                Auto-optimize LLM prompt caching.<br />Zero dependencies. MIT licensed.
               </p>
             </div>
             {[
