@@ -7,6 +7,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat-square&color=cb3837" alt="npm"></a>
+  <a href="https://pypi.org/project/cachellm-py/"><img src="https://img.shields.io/pypi/v/cachellm-py?style=flat-square&color=3775A9" alt="PyPI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/npm/l/cachellm?style=flat-square&color=blue" alt="license"></a>
   <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat-square&label=tests" alt="CI"></a>
   <a href="https://github.com/sahilempire/cachellm"><img src="https://img.shields.io/github/stars/sahilempire/cachellm?style=flat-square" alt="stars"></a>
@@ -35,7 +36,8 @@ Anthropic and OpenAI both support prompt caching (up to **90% off** cached token
 ## Install
 
 ```bash
-npm install cachellm
+npm install cachellm        # node / typescript
+pip install cachellm-py     # python
 ```
 
 ---
@@ -92,6 +94,24 @@ const response = await client.chat.completions.create({
 })
 
 client.printStats()
+```
+
+### Python
+
+```python
+from anthropic import Anthropic
+from cachellm import optimize_anthropic
+
+client = optimize_anthropic(Anthropic())
+
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    max_tokens=1024,
+    system="You are a helpful cooking assistant...",
+    messages=[{"role": "user", "content": "How do I make biryani?"}],
+)
+
+client.print_stats()
 ```
 
 ---

@@ -101,8 +101,9 @@ function Code({ children, heavy = false, mobile = false }: { children: React.Rea
 // ── MAIN ─────────────────────────────────────────────────────────────
 export default function Home() {
   const { mobile, tablet, desktop } = useBreakpoint();
-  const [copied, setCopied] = useState(false);
-  const copy = () => { navigator.clipboard.writeText("npm install cachellm"); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+  const [copied, setCopied] = useState<string | false>(false);
+  const copyNpm = () => { navigator.clipboard.writeText("npm install cachellm"); setCopied("npm"); setTimeout(() => setCopied(false), 2000); };
+  const copyPip = () => { navigator.clipboard.writeText("pip install cachellm-py"); setCopied("pip"); setTimeout(() => setCopied(false), 2000); };
 
   const pagePadding = mobile ? "0 16px" : "0 32px";
 
@@ -116,6 +117,7 @@ export default function Home() {
             {[
               { label: "GITHUB", href: "https://github.com/sahilempire/cachellm" },
               { label: "NPM", href: "https://www.npmjs.com/package/cachellm" },
+              { label: "PYPI", href: "https://pypi.org/project/cachellm-py/" },
               ...(!mobile ? [{ label: "DOCS", href: "https://github.com/sahilempire/cachellm#quick-start" }] : []),
             ].map(l => (
               <a key={l.label} href={l.href} target="_blank" style={{ ...mono, fontSize: 11, letterSpacing: "1px", color: "#fff", textDecoration: "none", transition: "color 120ms" }}
@@ -131,20 +133,28 @@ export default function Home() {
 
         {/* ── HERO ── */}
         <header style={{ paddingTop: mobile ? 40 : 64, paddingBottom: mobile ? 32 : 48, borderBottom: "2px solid #000" }}>
-          <div style={{ ...kicker, marginBottom: 8 }}>OPEN SOURCE · NPM PACKAGE</div>
+          <div style={{ ...kicker, marginBottom: 8 }}>OPEN SOURCE · NPM · PYPI</div>
           <h1 style={{ ...display, fontSize: mobile ? 48 : "clamp(48px, 8vw, 80px)", marginBottom: 20 }}>cachellm</h1>
           <p style={{ ...bodySerif, maxWidth: 560, marginBottom: 36, fontSize: mobile ? 17 : 19 }}>
             Auto-optimize LLM prompt caching. One line of code.{" "}
             <strong>60–90% savings</strong>{" "}on your Claude &amp; GPT API bills.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-            <button onClick={copy} style={{ display: "inline-flex", alignItems: "center", gap: mobile ? 8 : 12, padding: mobile ? "10px 16px" : "12px 24px", border: "2px solid #000", borderRadius: 0, background: "#fff", color: "#000", ...mono, fontSize: mobile ? 12 : 13, fontWeight: 700, cursor: "pointer", transition: "background 150ms, color 150ms" }}
+            <button onClick={copyNpm} style={{ display: "inline-flex", alignItems: "center", gap: mobile ? 8 : 12, padding: mobile ? "10px 16px" : "12px 24px", border: "2px solid #000", borderRadius: 0, background: "#fff", color: "#000", ...mono, fontSize: mobile ? 12 : 13, fontWeight: 700, cursor: "pointer", transition: "background 150ms, color 150ms" }}
               onMouseEnter={e => { e.currentTarget.style.background = "#000"; e.currentTarget.style.color = "#fff"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
             >
               <span style={{ color: "#757575" }}>$</span>
               <span>npm install cachellm</span>
-              <span style={{ color: "#999", fontSize: 10, letterSpacing: "1px", borderLeft: "1px solid #e2e8f0", paddingLeft: mobile ? 8 : 12 }}>{copied ? "COPIED" : "COPY"}</span>
+              <span style={{ color: "#999", fontSize: 10, letterSpacing: "1px", borderLeft: "1px solid #e2e8f0", paddingLeft: mobile ? 8 : 12 }}>{copied === "npm" ? "COPIED" : "COPY"}</span>
+            </button>
+            <button onClick={copyPip} style={{ display: "inline-flex", alignItems: "center", gap: mobile ? 8 : 12, padding: mobile ? "10px 16px" : "12px 24px", border: "2px solid #000", borderRadius: 0, background: "#fff", color: "#000", ...mono, fontSize: mobile ? 12 : 13, fontWeight: 700, cursor: "pointer", transition: "background 150ms, color 150ms" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#000"; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#000"; }}
+            >
+              <span style={{ color: "#757575" }}>$</span>
+              <span>pip install cachellm-py</span>
+              <span style={{ color: "#999", fontSize: 10, letterSpacing: "1px", borderLeft: "1px solid #e2e8f0", paddingLeft: mobile ? 8 : 12 }}>{copied === "pip" ? "COPIED" : "COPY"}</span>
             </button>
             <a href="https://github.com/sahilempire/cachellm" target="_blank" style={{ display: "inline-flex", alignItems: "center", padding: mobile ? "10px 16px" : "12px 24px", border: "2px solid #000", borderRadius: 0, background: "#fff", color: "#000", ...sans, fontSize: 14, fontWeight: 700, letterSpacing: "0.3px", textDecoration: "none", transition: "background 150ms, color 150ms" }}
               onMouseEnter={e => { e.currentTarget.style.background = "#000"; e.currentTarget.style.color = "#fff"; }}
@@ -438,7 +448,7 @@ export default function Home() {
               </p>
             </div>
             {[
-              { title: "LINKS", items: [{ text: "GitHub ↗", href: "https://github.com/sahilempire/cachellm" }, { text: "npm ↗", href: "https://www.npmjs.com/package/cachellm" }, { text: "Issues ↗", href: "https://github.com/sahilempire/cachellm/issues" }] },
+              { title: "LINKS", items: [{ text: "GitHub ↗", href: "https://github.com/sahilempire/cachellm" }, { text: "npm ↗", href: "https://www.npmjs.com/package/cachellm" }, { text: "PyPI ↗", href: "https://pypi.org/project/cachellm-py/" }, { text: "Issues ↗", href: "https://github.com/sahilempire/cachellm/issues" }] },
               { title: "RESOURCES", items: [{ text: "Documentation", href: "https://github.com/sahilempire/cachellm#quick-start" }, { text: "Examples", href: "https://github.com/sahilempire/cachellm/tree/main/examples" }, { text: "Contributing", href: "https://github.com/sahilempire/cachellm/blob/main/CONTRIBUTING.md" }] },
               { title: "AUTHOR", items: [{ text: "@sahilempire", href: "https://github.com/sahilempire" }] },
             ].map(col => (
