@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cachellm"
+version = "0.2.0"
+description = "Auto-optimize LLM prompt caching. Save 60-90% on Claude, GPT & Gemini API costs."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "sahilempire" }]
+keywords = [
+    "llm", "prompt-caching", "anthropic", "openai", "claude",
+    "gpt", "gemini", "cost-optimization", "ai", "cache",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/sahilempire/cachellm"
+Repository = "https://github.com/sahilempire/cachellm"
+Issues = "https://github.com/sahilempire/cachellm/issues"
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.30.0"]
+openai = ["openai>=1.40.0"]
+google = ["google-generativeai>=0.8.0"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[tool.setuptools.packages.find]
+include = ["cachellm*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

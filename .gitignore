@@ -8,3 +8,6 @@ coverage/
 *.log
 website/node_modules/
 website/.next/
+python/cachellm.egg-info/
+python/dist/
+python/build/
