@@ -1,104 +1,46 @@
-<h1 align="center">cachellm</h1>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/cachellm-white?style=for-the-badge&labelColor=000&color=000&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRleHQgeD0iNCIgeT0iMTgiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE4IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXdlaWdodD0iYm9sZCI+Qzwv dGV4dD48L3N2Zz4=">
+    <img alt="cachellm" src="https://img.shields.io/badge/cachellm-black?style=for-the-badge&labelColor=fff&color=fff">
+  </picture>
+</p>
+
+<h3 align="center">Your LLM calls are wasting money. Fix it in one line.</h3>
 
 <p align="center">
-  <b>Stop overpaying for LLM intelligence you already bought.</b>
+  Wraps your Anthropic / OpenAI / Gemini SDK client. Analyzes prompt stability.<br>
+  Injects cache breakpoints automatically. <b>Cuts API costs 60-90%.</b>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat&color=cb3837" alt="npm"></a>&nbsp;
+  <a href="https://pypi.org/project/cachellm-py/"><img src="https://img.shields.io/pypi/v/cachellm-py?style=flat&color=3775A9" alt="PyPI"></a>&nbsp;
+  <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat&label=106%20tests" alt="CI"></a>&nbsp;
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="license"></a>&nbsp;
+  <a href="https://github.com/sahilempire/cachellm"><img src="https://img.shields.io/github/stars/sahilempire/cachellm?style=flat" alt="stars"></a>
+</p>
+
+<p align="center">
+  <a href="#install">Install</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;<a href="#quick-start">Quick Start</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;<a href="#how-it-works">How It Works</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;<a href="#provider-support">Providers</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;<a href="#configuration">Config</a>
 </p>
 
 <br>
 
-<table align="center">
-<tr>
-<td>
+```typescript
+// before — you're paying full price for the same tokens every call
+const client = new Anthropic()
 
+// after — same API, same types, 90% less on cached tokens
+const client = optimizeAnthropic(new Anthropic())
 ```
-  Your LLM bill today          With cachellm
-                                
-  ████████████████ $900/mo      ██ $135/mo
-                                
-  You're resending the same     One line. Same SDK.
-  system prompt 10,000 times    90% of those tokens
-  a day — paying full price     are now cached.
-  every time.                   
-```
-
-</td>
-</tr>
-</table>
 
 <br>
 
-```diff
-- const client = new Anthropic()
-+ const client = optimizeAnthropic(new Anthropic())
-```
-
-<p align="center">
-  That's the entire integration. Your code doesn't change. Your types don't change.<br>
-  Your API bill drops 60-90%.
-</p>
+> **$900/mo → $135/mo** — based on 10K req/day with a 3K token system prompt on Claude Sonnet.
+> Your system prompt, tool schemas, and older messages get cached automatically.
+> You only pay full price for what actually changes.
 
 <br>
-
-<p align="center">
-  <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat-square&color=cb3837" alt="npm"></a>
-  <a href="https://pypi.org/project/cachellm-py/"><img src="https://img.shields.io/pypi/v/cachellm-py?style=flat-square&color=3775A9" alt="PyPI"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/npm/l/cachellm?style=flat-square&color=blue" alt="license"></a>
-  <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat-square&label=106%20tests" alt="CI"></a>
-  <a href="https://github.com/sahilempire/cachellm"><img src="https://img.shields.io/github/stars/sahilempire/cachellm?style=flat-square" alt="stars"></a>
-</p>
-
-<p align="center">
-  <code>npm install cachellm</code>&nbsp;&nbsp;·&nbsp;&nbsp;<code>pip install cachellm-py</code>
-</p>
-
-<p align="center">
-  <sub>Claude &nbsp;·&nbsp; GPT &nbsp;·&nbsp; Gemini &nbsp;&nbsp;|&nbsp;&nbsp; TypeScript &nbsp;·&nbsp; Python &nbsp;&nbsp;|&nbsp;&nbsp; &lt;15KB gzipped &nbsp;&nbsp;|&nbsp;&nbsp; 0 deps &nbsp;&nbsp;|&nbsp;&nbsp; 106 tests</sub>
-</p>
-
-<br>
-
-<details>
-<summary><b>What happens under the hood</b> (click to expand)</summary>
-<br>
-
-```
-   request arrives
-        │
-        ▼
-   ┌─ ANALYZER ─────────────────────────────┐
-   │                                         │
-   │  djb2 hash each content block           │
-   │  compare against last N requests        │
-   │  score stability: 0.0 → 1.0            │
-   │                                         │
-   │  system prompt    → 0.95 (always same)  │
-   │  tool definitions → 0.95 (always same)  │
-   │  older messages   → 0.70 (mostly same)  │
-   │  latest message   → 0.10 (always new)   │
-   └─────────────┬───────────────────────────┘
-                 │
-                 ▼
-   ┌─ STRATEGY ──────────────────────────────┐
-   │                                         │
-   │  sort by (stability × token_count)      │
-   │  pick top N segments (max 4)            │
-   │  skip anything below min_tokens         │
-   └─────────────┬───────────────────────────┘
-                 │
-                 ▼
-   ┌─ PROVIDER ADAPTER ─────────────────────┐
-   │                                         │
-   │  Anthropic: inject cache_control        │
-   │  OpenAI:    reorder prefix              │
-   │  Gemini:    manage CachedContent API    │
-   └─────────────┬───────────────────────────┘
-                 │
-                 ▼
-        API call fires
-   response.usage → stats tracker
-```
-
-</details>
 
 ---
 
