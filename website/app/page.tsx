@@ -16,7 +16,7 @@ function useBreakpoint() {
 
 // ── fonts ───────────────────────────────────────────────────────────
 const mono = { fontFamily: "'JetBrains Mono', 'SF Mono', Consolas, monospace" };
-const serif = { fontFamily: "'Instrument Serif', Georgia, 'Times New Roman', serif" };
+const serif = { fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif" };
 const sans = { fontFamily: "'Inter', system-ui, -apple-system, sans-serif" };
 
 // ── colors ──────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ export default function Home() {
         {/* ── HERO ── */}
         <header style={{ paddingTop: mobile ? 48 : 80, paddingBottom: mobile ? 48 : 72, borderBottom: `2px solid ${ink}` }}>
           <Kicker>Open Source / Developer Tool</Kicker>
-          <h1 style={{ ...serif, fontSize: mobile ? 48 : "clamp(60px, 9vw, 88px)", fontWeight: 400, lineHeight: 0.95, letterSpacing: "-1px", color: ink, marginBottom: mobile ? 20 : 28 }}>
+          <h1 style={{ ...serif, fontSize: mobile ? 48 : "clamp(60px, 9vw, 88px)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-1px", color: ink, marginBottom: mobile ? 20 : 28 }}>
             Stop Overpaying<br />for LLM Calls.
           </h1>
           <p style={{ ...sans, fontSize: mobile ? 15 : 17, lineHeight: 1.65, color: gray, maxWidth: 520, marginBottom: mobile ? 32 : 40 }}>
