@@ -8,8 +8,8 @@
   }
 
   body {
-    background: #fff;
-    color: #000;
+    background: #0a0a0c;
+    color: #e4e4e7;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-size: 16px;
     line-height: 1.5;
@@ -18,7 +18,7 @@
   }
 
   ::selection {
-    background: #000;
+    background: rgba(139, 92, 246, 0.3);
     color: #fff;
   }
 }
