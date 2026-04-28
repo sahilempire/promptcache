@@ -13,10 +13,13 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat&color=cb3837" alt="npm"></a>&nbsp;
-  <a href="https://pypi.org/project/cachellm-py/"><img src="https://img.shields.io/pypi/v/cachellm-py?style=flat&color=3775A9" alt="PyPI"></a>&nbsp;
-  <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat&label=106%20tests" alt="CI"></a>&nbsp;
+  <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/v/cachellm?style=flat&color=cb3837" alt="npm version"></a>&nbsp;
+  <a href="https://pypi.org/project/cachellm-py/"><img src="https://img.shields.io/pypi/v/cachellm-py?style=flat&color=3775A9" alt="PyPI version"></a>&nbsp;
+  <a href="https://www.npmjs.com/package/cachellm"><img src="https://img.shields.io/npm/dw/cachellm?style=flat&color=black" alt="weekly downloads"></a>&nbsp;
+  <a href="https://bundlephobia.com/package/cachellm"><img src="https://img.shields.io/bundlephobia/minzip/cachellm?style=flat&color=green" alt="bundle size"></a>&nbsp;
+  <a href="https://github.com/sahilempire/cachellm/actions"><img src="https://img.shields.io/github/actions/workflow/status/sahilempire/cachellm/ci.yml?style=flat&label=tests" alt="CI"></a>&nbsp;
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="license"></a>&nbsp;
+  <a href="https://github.com/sahilempire/cachellm"><img src="https://img.shields.io/badge/TypeScript-strict-blue?style=flat" alt="TypeScript"></a>&nbsp;
   <a href="https://github.com/sahilempire/cachellm"><img src="https://img.shields.io/github/stars/sahilempire/cachellm?style=flat" alt="stars"></a>
 </p>
 

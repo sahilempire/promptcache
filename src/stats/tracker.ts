@@ -143,6 +143,45 @@ export class StatsTracker {
     }
   }
 
+  exportJson(): string {
+    const stats = this.getStats()
+    return JSON.stringify({
+      timestamp: new Date().toISOString(),
+      summary: {
+        totalRequests: stats.totalRequests,
+        cacheHits: stats.cacheHits,
+        cacheMisses: stats.cacheMisses,
+        hitRate: round(stats.hitRate * 100),
+        totalInputTokens: stats.totalInputTokens,
+        cachedInputTokens: stats.cachedInputTokens,
+        cacheCreationTokens: stats.cacheCreationTokens,
+        estimatedSavingsUsd: stats.estimatedSavingsUsd,
+        estimatedSavingsPercent: stats.estimatedSavingsPercent,
+      },
+      byModel: stats.byModel,
+      recentRequests: stats.history,
+    }, null, 2)
+  }
+
+  exportCsv(): string {
+    const stats = this.getStats()
+    const headers = ['timestamp', 'provider', 'model', 'inputTokens', 'cachedTokens', 'cacheCreationTokens', 'outputTokens', 'estimatedCostUsd', 'estimatedSavingsUsd']
+    const rows = stats.history.map(stat => [
+      new Date(stat.timestamp).toISOString(),
+      stat.provider,
+      stat.model,
+      stat.inputTokens,
+      stat.cachedTokens,
+      stat.cacheCreationTokens,
+      stat.outputTokens,
+      stat.estimatedCostUsd.toFixed(4),
+      stat.estimatedSavingsUsd.toFixed(4),
+    ])
+
+    const lines = [headers.join(','), ...rows.map(row => row.map(v => typeof v === 'string' && v.includes(',') ? `"${v}"` : v).join(','))]
+    return lines.join('\n')
+  }
+
   print(): void {
     const stats = this.getStats()
 
