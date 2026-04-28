@@ -61,9 +61,11 @@ const btnFilled: React.CSSProperties = {
 };
 
 // ── MAIN ────────────────────────────────────────────────────────────
+type CopiedType = false | "npm" | "pip";
+
 export default function Home() {
   const { mobile, tablet } = useBreakpoint();
-  const [copied, setCopied] = useState<string | false>(false);
+  const [copied, setCopied] = useState<CopiedType>(false);
   const copyNpm = () => { navigator.clipboard.writeText("npm install cachellm"); setCopied("npm"); setTimeout(() => setCopied(false), 2000); };
   const copyPip = () => { navigator.clipboard.writeText("pip install cachellm-py"); setCopied("pip"); setTimeout(() => setCopied(false), 2000); };
 
@@ -106,16 +108,26 @@ export default function Home() {
             A printerly, monochrome caching layer for Anthropic, OpenAI, and Gemini. Wraps your SDK client. Injects cache breakpoints. Tracks savings. <strong style={{ color: ink }}>60–90% off your API bill.</strong>
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-            <button onClick={copyNpm} style={btnOutline}
+            <button
+              onClick={copyNpm}
+              style={btnOutline}
+              aria-label="Copy npm install command"
               onMouseEnter={e => { e.currentTarget.style.background = ink; e.currentTarget.style.color = paper; }}
               onMouseLeave={e => { e.currentTarget.style.background = paper; e.currentTarget.style.color = ink; }}
+              onFocus={e => { e.currentTarget.style.outline = `2px solid ${ink}`; e.currentTarget.style.outlineOffset = "2px"; }}
+              onBlur={e => { e.currentTarget.style.outline = "none"; }}
             >
               npm install cachellm
               <span style={{ marginLeft: 12, opacity: 0.4, fontSize: 10 }}>{copied === "npm" ? "COPIED" : "COPY"}</span>
             </button>
-            <button onClick={copyPip} style={btnFilled}
+            <button
+              onClick={copyPip}
+              style={btnFilled}
+              aria-label="Copy pip install command"
               onMouseEnter={e => { e.currentTarget.style.background = paper; e.currentTarget.style.color = ink; }}
               onMouseLeave={e => { e.currentTarget.style.background = ink; e.currentTarget.style.color = paper; }}
+              onFocus={e => { e.currentTarget.style.outline = `2px solid ${paper}`; e.currentTarget.style.outlineOffset = "2px"; }}
+              onBlur={e => { e.currentTarget.style.outline = "none"; }}
             >
               pip install cachellm-py
               <span style={{ marginLeft: 12, opacity: 0.4, fontSize: 10 }}>{copied === "pip" ? "COPIED" : "COPY"}</span>
@@ -238,32 +250,53 @@ export default function Home() {
         {/* ── COST TABLE ── */}
         <section style={{ paddingTop: mobile ? 48 : 72, paddingBottom: mobile ? 48 : 72, borderBottom: `1px solid ${hairline}` }}>
           <Kicker>Cost Projection</Kicker>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ borderBottom: `2px solid ${ink}` }}>
-                  {["SCALE", "BEFORE", "AFTER", "SAVED/DAY"].map((h, i) => (
-                    <td key={h} style={{ ...mono, fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", color: gray, padding: "14px 0", textAlign: i > 0 ? "right" : "left" }}>{h}</td>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { scale: "100 req/day", before: "$9", after: "$1.35", saved: "$7.65" },
-                  { scale: "500 req/day", before: "$45", after: "$6.75", saved: "$38.25" },
-                  { scale: "1,000 req/day", before: "$90", after: "$13.50", saved: "$76.50" },
-                  { scale: "10,000 req/day", before: "$900", after: "$135", saved: "$765" },
-                ].map((r, i) => (
-                  <tr key={i} style={{ borderBottom: `1px solid ${hairline}` }}>
-                    <td style={{ padding: "16px 0", ...mono, fontSize: 13 }}>{r.scale}</td>
-                    <td style={{ padding: "16px 0", textAlign: "right", ...sans, color: gray, textDecoration: "line-through", fontSize: 14 }}>{r.before}</td>
-                    <td style={{ padding: "16px 0", textAlign: "right", ...sans, fontWeight: 700, fontSize: 17 }}>{r.after}</td>
-                    <td style={{ padding: "16px 0", textAlign: "right", ...mono, fontSize: 12, color: gray }}>{r.saved}</td>
+          {mobile ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {[
+                { scale: "100 req/day", before: "$9", after: "$1.35", saved: "$7.65" },
+                { scale: "500 req/day", before: "$45", after: "$6.75", saved: "$38.25" },
+                { scale: "1,000 req/day", before: "$90", after: "$13.50", saved: "$76.50" },
+                { scale: "10,000 req/day", before: "$900", after: "$135", saved: "$765" },
+              ].map((r, i) => (
+                <div key={i} style={{ padding: "16px", border: `1px solid ${hairline}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div style={{ gridColumn: "1 / -1", ...mono, fontSize: 13, fontWeight: 700, marginBottom: 8 }}>{r.scale}</div>
+                  <div style={{ ...sans, fontSize: 12, color: gray }}>Before</div>
+                  <div style={{ textAlign: "right", ...sans, color: gray, textDecoration: "line-through", fontSize: 14 }}>{r.before}</div>
+                  <div style={{ ...sans, fontSize: 12, color: gray }}>After</div>
+                  <div style={{ textAlign: "right", ...sans, fontWeight: 700, fontSize: 16 }}>{r.after}</div>
+                  <div style={{ ...sans, fontSize: 12, color: gray }}>Saved</div>
+                  <div style={{ textAlign: "right", ...mono, fontSize: 12, fontWeight: 700, color: ink }}>{r.saved}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: `2px solid ${ink}` }}>
+                    {["SCALE", "BEFORE", "AFTER", "SAVED/DAY"].map((h, i) => (
+                      <td key={h} style={{ ...mono, fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", color: gray, padding: "14px 0", textAlign: i > 0 ? "right" : "left" }}>{h}</td>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {[
+                    { scale: "100 req/day", before: "$9", after: "$1.35", saved: "$7.65" },
+                    { scale: "500 req/day", before: "$45", after: "$6.75", saved: "$38.25" },
+                    { scale: "1,000 req/day", before: "$90", after: "$13.50", saved: "$76.50" },
+                    { scale: "10,000 req/day", before: "$900", after: "$135", saved: "$765" },
+                  ].map((r, i) => (
+                    <tr key={i} style={{ borderBottom: `1px solid ${hairline}` }}>
+                      <td style={{ padding: "16px 0", ...mono, fontSize: 13 }}>{r.scale}</td>
+                      <td style={{ padding: "16px 0", textAlign: "right", ...sans, color: gray, textDecoration: "line-through", fontSize: 14 }}>{r.before}</td>
+                      <td style={{ padding: "16px 0", textAlign: "right", ...sans, fontWeight: 700, fontSize: 17 }}>{r.after}</td>
+                      <td style={{ padding: "16px 0", textAlign: "right", ...mono, fontSize: 12, color: gray }}>{r.saved}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           <p style={{ ...mono, fontSize: 10, letterSpacing: "0.5px", color: gray, marginTop: 20, opacity: 0.5 }}>Based on Claude Sonnet, 3K token system prompt, 90% cache hit rate.</p>
         </section>
 
